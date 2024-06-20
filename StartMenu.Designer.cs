@@ -1,9 +1,13 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
-// Dalton Christopher
-// 2024
-// TUA
+/*
+  ##################################################################
+  ### Dalton Christopher - ID: A00122255                         ###
+  ### TUA - PBT205—Project-based Learning Studio: Technology     ###
+  ### - Assesment - 1                                            ###
+  ### - 06/2024                                                  ###
+  ##################################################################
+*/
 
 namespace PBT_205_A1
 {
@@ -37,7 +41,7 @@ namespace PBT_205_A1
             this.components = new Container();
             this.AutoScaleMode = AutoScaleMode.Font;
             this.BackColor = Color.Gray;
-            this.ForeColor = Color.Red;
+            this.ForeColor = Color.White;
             this.ClientSize = new Size(600, 400);
             this.Text = "App Menu";
 
@@ -82,7 +86,7 @@ namespace PBT_205_A1
             button.Text = buttonText;
             button.Font = new Font("OCR A Extended", 16f, FontStyle.Bold);
             button.BackColor = Color.Black;
-            button.ForeColor = Color.Red;
+            button.ForeColor = Color.White;
             button.Size = new Size(350, 50);
             button.Location = new Point((this.ClientSize.Width - button.Width) / 2, yPos);
             button.FlatStyle = FlatStyle.Flat;
@@ -124,7 +128,12 @@ namespace PBT_205_A1
         /// <param name="e"></param>
         private void ChatAppBtnClick(object sender, EventArgs e)
         {
-            // do chatting innit
+            var chatLogin = new ChatLogin();
+            if (chatLogin.ShowDialog() == DialogResult.OK)
+            {
+                ChatApp chatApp = new ChatApp(chatLogin.Username, chatLogin.Password);
+                chatApp.ShowDialog();
+            }
         }
 
         /// <summary>
