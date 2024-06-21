@@ -57,16 +57,15 @@ namespace PBT_205_A1
             Username = usernameTextBox.Text;
             Password = passwordTextBox.Text;
 
-            if (ValidateCredentials(Username, Password))
+            if (ValidateLogin(Username, Password))
             {
                 DialogResult = DialogResult.OK;
                 Close();
             }
         }
 
-        private bool ValidateCredentials(string username, string password)
+        static bool ValidateLogin(string username, string password)
         {
-            // You can add your actual validation logic here
             return !string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password);
         }
     }
