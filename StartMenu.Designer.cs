@@ -66,6 +66,7 @@ namespace PBT_205_A1
             Button tracingButton = CreateButton("Contact Tracing App", 300);
             tracingButton.Click += new EventHandler(this.TracingAppBtnClick);
 
+
             // Add the buttons to the Form
             this.Controls.Add(titleLabel);
             this.Controls.Add(chatButton);
