@@ -1,12 +1,13 @@
 ﻿using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
+using System.Windows.Forms;
 
 /*
   ##################################################################
   ### Dalton Christopher - ID: A00122255                         ###
   ### TUA - PBT205—Project-based Learning Studio: Technology     ###
-  ### - Assesment - 1                                            ###
+  ### - Assessment - 1                                           ###
   ### - 06/2024                                                  ###
   ##################################################################
 */
@@ -31,25 +32,28 @@ namespace PBT_205_A1
         IConnection? connection;
         IModel? channel;
 
-        readonly string queueName = "chat_room";
+        readonly string exchangeName = "chat_exchange";
+        string queueName;
+        readonly string routingKey = "chat_room";
         string username;
         string password;
         readonly string hostName = "localhost";
 
-        readonly Color textColour = ColorTranslator.FromHtml("#03FF00"); // Text color
+        readonly Color textColour = ColorTranslator.FromHtml("#03FF00");
         readonly Color textColourAlt = ColorTranslator.FromHtml("#0E9901");
-        readonly Color backgroundColour = ColorTranslator.FromHtml("#1E1E1E"); // Dark grey background
-        readonly Color clientColour = ColorTranslator.FromHtml("#5B5B5B"); // Dark grey background
+        readonly Color backgroundColour = ColorTranslator.FromHtml("#1E1E1E");
+        readonly Color clientColour = ColorTranslator.FromHtml("#5B5B5B");
 
         TextBox messageTextBox;
         ListBox chatListBox;
         Button sendButton;
-        TextBox usersTextBox; // New TextBox for users list
+        TextBox usersTextBox;
 
         public ChatApp(string username, string password)
         {
             this.username = username;
             this.password = password;
+            this.queueName = "chat_queue_" + username; // Unique queue for each user
 
             InitializeComponent();
             InitRabbitMQ();
@@ -103,8 +107,6 @@ namespace PBT_205_A1
             sendButton.Location = new Point(690, 400);
             sendButton.Click += new EventHandler(SendButtonClick);
 
-
-
             // Additional UI Settings
             messageTextBox.BackColor = backgroundColour;
             messageTextBox.BorderStyle = BorderStyle.Fixed3D;
@@ -132,11 +134,20 @@ namespace PBT_205_A1
                 connection = factory.CreateConnection();
                 channel = connection.CreateModel();
 
+                // Declare an exchange of type 'topic'
+                channel.ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Topic);
+
+                // Declare a unique queue for each client
                 channel.QueueDeclare(queue: queueName,
                                      durable: false,
                                      exclusive: false,
-                                     autoDelete: false,
+                                     autoDelete: true,  // Auto-delete the queue when user exits
                                      arguments: null);
+
+                // Bind the queue to the Rabbits exchange using chatroom routing key
+                channel.QueueBind(queue: queueName,
+                                  exchange: exchangeName,
+                                  routingKey: routingKey);
             }
             catch (Exception ex)
             {
@@ -171,12 +182,12 @@ namespace PBT_205_A1
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error startin chat-room: {ex.Message}");
+                MessageBox.Show($"Error starting chat-room: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Sends a message to the RabbitMQ queue.
+        /// Sends a message to the RabbitMQ exchange.
         /// </summary>
         private void SendMessage()
         {
@@ -194,10 +205,9 @@ namespace PBT_205_A1
             {
                 string fullMessage = $"{username}: {message}";
                 var body = Encoding.UTF8.GetBytes(fullMessage);
-                channel.BasicPublish(exchange: "", routingKey: queueName, basicProperties: null, body: body);
+                channel.BasicPublish(exchange: exchangeName, routingKey: routingKey, basicProperties: null, body: body);
                 messageTextBox.Clear();
             }
-
         }
 
         /// <summary>
@@ -205,9 +215,9 @@ namespace PBT_205_A1
         /// </summary>
         private void MessageTextBoxKeyDown(object? sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Enter)
+            if (e.KeyCode == Keys.Enter) // if enter is pressed
             {
-                SendMessage();
+                SendMessage(); // send msg
                 e.SuppressKeyPress = true; // Stop annoying ding sound
             }
         }
@@ -225,8 +235,12 @@ namespace PBT_205_A1
         /// </summary>
         public void UpdateUsersList(string[] users)
         {
-            // Idk if this works
-            usersTextBox.Text = string.Join(Environment.NewLine, users);
+            usersTextBox.Text = "Online:\n";// Online header
+            foreach (var user in users) // For each user online
+            {
+                usersTextBox.Text += $"{user}\n"; // Add to list
+            }
+            usersTextBox.Text += "--------\nOffline:\n"; // Offline header
         }
     }
 }
