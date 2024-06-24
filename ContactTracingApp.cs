@@ -2,6 +2,9 @@
 
 namespace PBT_205_A1
 {
+    /// <summary>
+    /// Form Class to Manage / Display the Tracing app
+    /// </summary>
     public partial class ContactTracingApp : Form
     {
         GridGenerator _GridGenerator;
@@ -12,6 +15,9 @@ namespace PBT_205_A1
         int _GridSize;
         GridTile[,] _Grid;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public ContactTracingApp()
         {
             ShowLoginForm();
@@ -24,6 +30,9 @@ namespace PBT_205_A1
             StartMoveTimer();
         }
 
+        /// <summary>
+        /// Get users to login
+        /// </summary>
         private void ShowLoginForm()
         {
             var loginForm = new ChatLogin();
@@ -47,6 +56,9 @@ namespace PBT_205_A1
             this.ResumeLayout(false);
         }
 
+        /// <summary>
+        /// Init the grid by contructing a new GridGen at the given size
+        /// </summary>
         private void InitializeGrid()
         {
             _GridSize = 20;
@@ -54,6 +66,9 @@ namespace PBT_205_A1
             _Grid = _GridGenerator.Tiles;
         }
 
+        /// <summary>
+        /// Place the user at a random point to begin with
+        /// </summary>
         private void PlaceUserRandomly()
         {
             int x = _Random.Next(_GridSize);
@@ -62,11 +77,19 @@ namespace PBT_205_A1
             _Grid[x, y].AddUser(_Username);
         }
 
+        /// <summary>
+        /// The timer / delay of the users update rate pos.
+        /// </summary>
         private void StartMoveTimer()
         {
+            // Move user after 2s
             _MoveTimer = new Timer(MoveUser, null, 2000, 2000);
         }
 
+        /// <summary>
+        /// Method to move the user to its next tile
+        /// </summary>
+        /// <param name="state"></param>
         private void MoveUser(object state)
         {
             PositionMarker newPosition = GetNewPosition(_PositionMarker);
@@ -76,6 +99,11 @@ namespace PBT_205_A1
             this.Invalidate();
         }
 
+        /// <summary>
+        /// Method to randomly select a neighbouring tile to move to
+        /// </summary>
+        /// <param name="positionMarker"> The Users Marker to be moved </param>
+        /// <returns></returns>
         private PositionMarker GetNewPosition(PositionMarker positionMarker)
         {
             var direction = _Random.Next(4);
@@ -98,12 +126,20 @@ namespace PBT_205_A1
             // Post pos to rabbit
         }
 
+        /// <summary>
+        /// Overrides the Form OnPaint Event
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
             DrawGrid(e.Graphics);
         }
 
+        /// <summary>
+        /// Method to draw the Tiles/Grid on the Ui/Form
+        /// </summary>
+        /// <param name="graphics"></param>
         private void DrawGrid(Graphics graphics)
         {
             int tileSize = 20;
@@ -130,6 +166,9 @@ namespace PBT_205_A1
         }
     }
 
+    /// <summary>
+    /// Class to Generate a grid of GridTiles
+    /// </summary>
     class GridGenerator
     {
         public GridTile[,] Tiles { get; private set; }
@@ -147,6 +186,9 @@ namespace PBT_205_A1
         }
     }
 
+    /// <summary>
+    /// Class for each Tile obj in the Grid
+    /// </summary>
     class GridTile
     {
         public int X { get; private set; }
@@ -181,6 +223,9 @@ namespace PBT_205_A1
         }
     }
 
+    /// <summary>
+    /// Class to mark a user on a given Tile
+    /// </summary>
     class PositionMarker
     {
         public string Username { get; private set; }
