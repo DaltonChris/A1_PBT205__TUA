@@ -10,20 +10,19 @@ namespace PBT_205_A1
         private Dictionary<string, PositionMarker> _EnvironmentView;
         private Dictionary<string, List<string>> _ContactLog;
         private RabbitMqController _RabbitMqController;
-        private Timer _Timer;
-        
+        private Timer _QueryTimer;
 
         public Tracker(string username, string roomName)
         {
             _EnvironmentView = new Dictionary<string, PositionMarker>();
             _ContactLog = new Dictionary<string, List<string>>();
-            _RabbitMqController = new RabbitMqController(username, roomName, "position");
+            _RabbitMqController = new RabbitMqController(username, roomName);
             StartQueryTimer();
         }
 
         public void StartQueryTimer()
         {
-            _Timer = new Timer(ProcessQueries, null, 0, 1000);
+            _QueryTimer = new Timer(ProcessQueries, null, 0, 1000);
         }
 
         public void SubscribeToPositionTopic()
@@ -98,7 +97,7 @@ namespace PBT_205_A1
 
         private void ProcessQueries(object state)
         {
-            // check for new queries
+            // Periodically check for new queries
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Timer = System.Threading.Timer;
+﻿using System;
+using Timer = System.Threading.Timer;
 
 namespace PBT_205_A1
 {
@@ -26,11 +27,13 @@ namespace PBT_205_A1
             InitializeComponent();
             InitializeGrid();
             _Random = new Random();
-            _RabbitMqController = new RabbitMqController(_Username, "Room1", "position");
+            _RabbitMqController = new RabbitMqController(_Username, "Room1");
             InitializeTracker();
             PlaceUserRandomly();
             PublishPosition();
             StartMoveTimer();
+
+            _RabbitMqController.SubscribeToPositions(UpdateGrid);
         }
 
         /// <summary>
@@ -105,6 +108,7 @@ namespace PBT_205_A1
             _Grid[_PositionMarker.X, _PositionMarker.Y].RemoveUser(_Username);
             _Grid[newPosition.X, newPosition.Y].AddUser(_Username);
             _PositionMarker = newPosition;
+            PublishPosition();
             this.Invalidate();
         }
 
@@ -132,7 +136,8 @@ namespace PBT_205_A1
 
         private void PublishPosition()
         {
-            // Post pos to rabbit
+            var positionMessage = $"{_Username},{_PositionMarker.X},{_PositionMarker.Y}";
+            _RabbitMqController.PublishPosition(positionMessage);
         }
 
         /// <summary>
@@ -173,6 +178,23 @@ namespace PBT_205_A1
                 }
             }
         }
+
+        private void UpdateGrid(string message)
+        {
+            var parts = message.Split(',');
+            var username = parts[0];
+            var x = int.Parse(parts[1]);
+            var y = int.Parse(parts[2]);
+
+            foreach (var tile in _Grid)
+            {
+                tile.RemoveUser(username);
+            }
+
+            _Grid[x, y].AddUser(username);
+            this.Invalidate();
+        }
+        
     }
 
     /// <summary>
@@ -252,6 +274,38 @@ namespace PBT_205_A1
         {
             X = newX;
             Y = newY;
+        }
+    }
+
+    public class Query
+    {
+        private RabbitMqController _rabbitMqController;
+        private string _personIdentifier;
+        private string _responseQueueName;
+
+        public Query(string username, string roomName, string personIdentifier)
+        {
+            _rabbitMqController = new RabbitMqController(username, roomName, "query");
+            _personIdentifier = personIdentifier;
+            _responseQueueName = $"Query_Response_Queue_{roomName}_{username}";
+            ConnectToMiddleware();
+        }
+
+        private void ConnectToMiddleware()
+        {
+            _rabbitMqController.PublishPosition(_personIdentifier);
+            _rabbitMqController.SubscribeToQueryResponse(_responseQueueName, HandleQueryResponse);
+        }
+
+        public void SendQuery()
+        {
+            _rabbitMqController.PublishPosition(_personIdentifier);
+        }
+
+        private void HandleQueryResponse(string message)
+        {
+            // Handle the response received from the tracker
+            Console.WriteLine("Query Response: " + message);
         }
     }
 }
