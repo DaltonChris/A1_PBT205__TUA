@@ -13,7 +13,9 @@ namespace PBT_205_A1
         PositionMarker _PositionMarker;
         Timer _MoveTimer;
         int _GridSize;
-        GridTile[,] _Grid;
+        public static GridTile[,] _Grid;
+        Tracker _Tracker;
+        RabbitMqController _RabbitMqController;
 
         /// <summary>
         /// Constructor
@@ -24,7 +26,8 @@ namespace PBT_205_A1
             InitializeComponent();
             InitializeGrid();
             _Random = new Random();
-
+            _RabbitMqController = new RabbitMqController(_Username, "Room1", "position");
+            InitializeTracker();
             PlaceUserRandomly();
             PublishPosition();
             StartMoveTimer();
@@ -44,6 +47,12 @@ namespace PBT_205_A1
             {
                 Environment.Exit(0);
             }
+        }
+
+        void InitializeTracker() {
+            _Tracker = new Tracker(_Username, "Room1");
+            _Tracker.SubscribeToPositionTopic();
+            _Tracker.SubscribeToQueryTopic();
         }
 
         private void InitializeComponent()
@@ -189,7 +198,7 @@ namespace PBT_205_A1
     /// <summary>
     /// Class for each Tile obj in the Grid
     /// </summary>
-    class GridTile
+    public class GridTile
     {
         public int X { get; private set; }
         public int Y { get; private set; }
