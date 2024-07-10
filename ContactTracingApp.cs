@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Timer = System.Threading.Timer;
 
 namespace PBT_205_A1
@@ -11,6 +12,7 @@ namespace PBT_205_A1
         GridGenerator _GridGenerator;
         Random _Random;
         string _Username;
+        string _Password;
         PositionMarker _PositionMarker;
         Timer _MoveTimer;
         int _GridSize;
@@ -21,39 +23,25 @@ namespace PBT_205_A1
         /// <summary>
         /// Constructor
         /// </summary>
-        public ContactTracingApp()
+        public ContactTracingApp(string username,string password)
         {
-            ShowLoginForm();
+            this._Password = password;
+            this._Username = username;
             InitializeComponent();
             InitializeGrid();
             _Random = new Random();
-            _RabbitMqController = new RabbitMqController(_Username, "Room1");
+            _RabbitMqController = new RabbitMqController(_Username, _Password);
             InitializeTracker();
             PlaceUserRandomly();
             PublishPosition();
             StartMoveTimer();
 
             _RabbitMqController.SubscribeToPositions(UpdateGrid);
-        }
 
-        /// <summary>
-        /// Get users to login
-        /// </summary>
-        private void ShowLoginForm()
-        {
-            var loginForm = new ChatLogin();
-            if (loginForm.ShowDialog() == DialogResult.OK)
-            {
-                _Username = loginForm.Username;
-            }
-            else
-            {
-                Environment.Exit(0);
-            }
         }
 
         void InitializeTracker() {
-            _Tracker = new Tracker(_Username, "Room1");
+            _Tracker = new Tracker(_Username, _Password);
             _Tracker.SubscribeToPositionTopic();
             _Tracker.SubscribeToQueryTopic();
         }
@@ -185,12 +173,12 @@ namespace PBT_205_A1
             var username = parts[0];
             var x = int.Parse(parts[1]);
             var y = int.Parse(parts[2]);
-
+            
             foreach (var tile in _Grid)
             {
                 tile.RemoveUser(username);
             }
-
+            Debug.WriteLine(message);
             _Grid[x, y].AddUser(username);
             this.Invalidate();
         }
@@ -285,7 +273,7 @@ namespace PBT_205_A1
 
         public Query(string username, string roomName, string personIdentifier)
         {
-            _rabbitMqController = new RabbitMqController(username, roomName, "query");
+            _rabbitMqController = new RabbitMqController(username, roomName);
             _personIdentifier = personIdentifier;
             _responseQueueName = $"Query_Response_Queue_{roomName}_{username}";
             ConnectToMiddleware();

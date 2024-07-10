@@ -155,10 +155,12 @@ namespace PBT_205_A1
         private void TracingAppBtnClick(object sender, EventArgs e)
         {
             // dank tracing of something idk bruh
-            var contactTracing = new ContactTracingApp();
-            if (contactTracing.ShowDialog() == DialogResult.OK)
+
+            var chatLogin = new ChatLogin();
+            if (chatLogin.ShowDialog() == DialogResult.OK)
             {
-                contactTracing.ShowDialog();
+                ContactTracingApp contactTracingApp = new ContactTracingApp(chatLogin.Username, chatLogin.Password);
+                contactTracingApp.ShowDialog();
             }
         }
         #endregion

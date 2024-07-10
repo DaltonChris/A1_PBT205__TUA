@@ -14,22 +14,27 @@ namespace PBT_205_A1
         private readonly IModel channel;
         private readonly string exchangeName = "user_positions";
         private readonly string _RoutingKey = "position_room";
-        private readonly string username;
         private readonly string queueName;
 
-        public RabbitMqController(string username, string roomName)
+        public RabbitMqController(string username, string password)
         {
-            this.username = username;
             this.queueName = $"Positions_Queue_{username}";
-            var factory = new ConnectionFactory() { HostName = "localhost",                
-                                                    UserName = username
+            var factory = new ConnectionFactory() { HostName = "localhost",
+                                                    UserName = username,
+                                                    Password = password
             };
             connection = factory.CreateConnection();
             channel = connection.CreateModel();
 
-            channel.ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Topic);
-            channel.QueueDeclare(queue: queueName, durable: false, exclusive: false, autoDelete: true, arguments: null);
-            channel.QueueBind(queue: queueName, exchange: exchangeName, routingKey: _RoutingKey);
+            channel.ExchangeDeclare(exchange: exchangeName, 
+                                        type: ExchangeType.Topic);
+            channel.QueueDeclare(queue: queueName, durable: false,
+                                exclusive: false,
+                                autoDelete: true,
+                                arguments: null);
+            channel.QueueBind(queue: queueName,
+                            exchange: exchangeName,
+                            routingKey: _RoutingKey);
         }
 
         public void PublishPosition(string message)

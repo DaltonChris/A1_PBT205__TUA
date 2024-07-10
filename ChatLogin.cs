@@ -66,7 +66,6 @@ namespace PBT_205_A1
 
         private bool ValidateCredentials(string username, string password)
         {
-            // You can add your actual validation logic here
             return !string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password);
         }
     }
