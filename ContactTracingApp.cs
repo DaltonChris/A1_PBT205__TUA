@@ -49,7 +49,7 @@ namespace PBT_205_A1
         {
             this.SuspendLayout();
             // Form settings
-            this.ClientSize = new Size(600, 600);
+            this.ClientSize = new Size(588, 700);
             this.Name = "ContactTracingApp";
             this.Text = "Contact Tracing App";
             this.ResumeLayout(false);
@@ -60,7 +60,7 @@ namespace PBT_205_A1
         /// </summary>
         private void InitializeGrid()
         {
-            _GridSize = 20;
+            _GridSize = 28;
             _GridGenerator = new GridGenerator(_GridSize);
             _Grid = _GridGenerator.Tiles;
         }
