@@ -127,7 +127,9 @@ namespace PBT_205_A1
             return new PositionMarker(positionMarker.Username, newX, newY);
         }
 
-
+        /// <summary>
+        /// Method to post the changed position to rabbitMQ middleware
+        /// </summary>
         private void PublishPosition()
         {
             var positionMessage = $"{_Username},{_PositionMarker.X},{_PositionMarker.Y}";
@@ -182,7 +184,12 @@ namespace PBT_205_A1
             }
         }
 
-
+        /// <summary>
+        /// Udates the Position marker to the changed tile
+        /// </summary>
+        /// <param name="username"> User marker to move <param>
+        /// <param name="x"> new x pos </param>
+        /// <param name="y"> new y pos </param>
         private void UpdateGrid(string username, int x, int y)
         {
             foreach (var tile in _Grid)
@@ -271,38 +278,6 @@ namespace PBT_205_A1
         {
             X = newX;
             Y = newY;
-        }
-    }
-
-    public class Query
-    {
-        private RabbitMqController _rabbitMqController;
-        private string _personIdentifier;
-        private string _responseQueueName;
-
-        public Query(string username, string roomName, string personIdentifier)
-        {
-            _rabbitMqController = new RabbitMqController(username, roomName);
-            _personIdentifier = personIdentifier;
-            _responseQueueName = $"Query_Response_Queue_{roomName}_{username}";
-            ConnectToMiddleware();
-        }
-
-        private void ConnectToMiddleware()
-        {
-            _rabbitMqController.PublishPosition(_personIdentifier);
-            //_rabbitMqController.SubscribeToQueryResponse(_responseQueueName, HandleQueryResponse);
-        }
-
-        public void SendQuery()
-        {
-            _rabbitMqController.PublishPosition(_personIdentifier);
-        }
-
-        private void HandleQueryResponse(string message)
-        {
-            // Handle the response received from the tracker
-            Console.WriteLine("Query Response: " + message);
         }
     }
 }
