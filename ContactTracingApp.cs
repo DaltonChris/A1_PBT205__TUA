@@ -23,7 +23,7 @@ namespace PBT_205_A1
         /// <summary>
         /// Constructor
         /// </summary>
-        public ContactTracingApp(string username,string password)
+        public ContactTracingApp(string username, string password)
         {
             this._Password = password;
             this._Username = username;
@@ -35,13 +35,12 @@ namespace PBT_205_A1
             PlaceUserRandomly();
             PublishPosition();
             StartMoveTimer();
-
-            _RabbitMqController.SubscribeToPositions(UpdateGrid);
-
         }
 
-        void InitializeTracker() {
+        void InitializeTracker()
+        {
             _Tracker = new Tracker(_Username, _Password);
+            _Tracker.PositionMessageReceived += UpdateGrid;
             _Tracker.SubscribeToPositionTopic();
             _Tracker.SubscribeToQueryTopic();
         }
@@ -50,14 +49,14 @@ namespace PBT_205_A1
         {
             this.SuspendLayout();
             // Form settings
-            this.ClientSize = new Size(600, 600); 
+            this.ClientSize = new Size(600, 600);
             this.Name = "ContactTracingApp";
             this.Text = "Contact Tracing App";
             this.ResumeLayout(false);
         }
 
         /// <summary>
-        /// Init the grid by contructing a new GridGen at the given size
+        /// Init the grid by constructing a new GridGen at the given size
         /// </summary>
         private void InitializeGrid()
         {
@@ -78,7 +77,7 @@ namespace PBT_205_A1
         }
 
         /// <summary>
-        /// The timer / delay of the users update rate pos.
+        /// The timer / delay of the user's update rate pos.
         /// </summary>
         private void StartMoveTimer()
         {
@@ -101,26 +100,33 @@ namespace PBT_205_A1
         }
 
         /// <summary>
-        /// Method to randomly select a neighbouring tile to move to
+        /// Method to randomly select a neighboring tile to move to
         /// </summary>
-        /// <param name="positionMarker"> The Users Marker to be moved </param>
+        /// <param name="positionMarker"> The User's Marker to be moved </param>
         /// <returns></returns>
         private PositionMarker GetNewPosition(PositionMarker positionMarker)
         {
-            var direction = _Random.Next(4);
-            var newX = positionMarker.X;
-            var newY = positionMarker.Y;
+            int newX, newY;
 
-            switch (direction)
+            do
             {
-                case 0: newX = Math.Max(0, positionMarker.X - 1); break; // Left
-                case 1: newX = Math.Min(_GridSize - 1, positionMarker.X + 1); break; // Right
-                case 2: newY = Math.Max(0, positionMarker.Y - 1); break; // Up
-                case 3: newY = Math.Min(_GridSize - 1, positionMarker.Y + 1); break; // Down
-            }
+                var direction = _Random.Next(4);
+                newX = positionMarker.X;
+                newY = positionMarker.Y;
+
+                switch (direction)
+                {
+                    case 0: newX = positionMarker.X - 1; break; // Left
+                    case 1: newX = positionMarker.X + 1; break; // Right
+                    case 2: newY = positionMarker.Y - 1; break; // Up
+                    case 3: newY = positionMarker.Y + 1; break; // Down
+                }
+
+            } while (newX < 0 || newX >= _GridSize || newY < 0 || newY >= _GridSize);
 
             return new PositionMarker(positionMarker.Username, newX, newY);
         }
+
 
         private void PublishPosition()
         {
@@ -167,22 +173,15 @@ namespace PBT_205_A1
             }
         }
 
-        private void UpdateGrid(string message)
+        private void UpdateGrid(string username, int x, int y)
         {
-            var parts = message.Split(',');
-            var username = parts[0];
-            var x = int.Parse(parts[1]);
-            var y = int.Parse(parts[2]);
-            
             foreach (var tile in _Grid)
             {
                 tile.RemoveUser(username);
             }
-            Debug.WriteLine(message);
             _Grid[x, y].AddUser(username);
             this.Invalidate();
         }
-        
     }
 
     /// <summary>
@@ -282,7 +281,7 @@ namespace PBT_205_A1
         private void ConnectToMiddleware()
         {
             _rabbitMqController.PublishPosition(_personIdentifier);
-            _rabbitMqController.SubscribeToQueryResponse(_responseQueueName, HandleQueryResponse);
+            //_rabbitMqController.SubscribeToQueryResponse(_responseQueueName, HandleQueryResponse);
         }
 
         public void SendQuery()

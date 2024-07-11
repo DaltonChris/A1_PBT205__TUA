@@ -15,13 +15,13 @@ namespace PBT_205_A1
         private readonly string exchangeName = "user_positions";
         private readonly string _RoutingKey = "position_room";
         private readonly string queueName;
+        private readonly string queryQueueName;
+        private readonly string queryResponseExchange = "user.query.response";
 
         public RabbitMqController(string username, string password)
         {
             this.queueName = $"Positions_Queue_{username}";
             var factory = new ConnectionFactory() { HostName = "localhost",
-                                                    UserName = username,
-                                                    Password = password
             };
             connection = factory.CreateConnection();
             channel = connection.CreateModel();
@@ -35,12 +35,19 @@ namespace PBT_205_A1
             channel.QueueBind(queue: queueName,
                             exchange: exchangeName,
                             routingKey: _RoutingKey);
+
         }
 
         public void PublishPosition(string message)
         {
             var body = Encoding.UTF8.GetBytes(message);
             channel.BasicPublish(exchange: exchangeName, routingKey: _RoutingKey, basicProperties: null, body: body);
+        }
+
+        public void PublishQueryResponse(string message)
+        {
+            var body = Encoding.UTF8.GetBytes(message);
+            channel.BasicPublish(exchange: queryResponseExchange, routingKey: "query", basicProperties: null, body: body);
         }
 
         public void SubscribeToPositions(Action<string> callback)
@@ -55,11 +62,8 @@ namespace PBT_205_A1
             channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
         }
 
-        public void SubscribeToQueryResponse(string responseQueueName, Action<string> callback)
+        public void SubscribeToQuery(Action<string> callback)
         {
-            channel.QueueDeclare(queue: responseQueueName, durable: false, exclusive: false, autoDelete: true, arguments: null);
-            channel.QueueBind(queue: responseQueueName, exchange: exchangeName, routingKey: "query-response");
-
             var consumer = new EventingBasicConsumer(channel);
             consumer.Received += (model, ea) =>
             {
@@ -67,7 +71,7 @@ namespace PBT_205_A1
                 var message = Encoding.UTF8.GetString(body);
                 callback(message);
             };
-            channel.BasicConsume(queue: responseQueueName, autoAck: true, consumer: consumer);
+            channel.BasicConsume(queue: queryQueueName, autoAck: true, consumer: consumer);
         }
 
         public void Close()

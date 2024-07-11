@@ -12,6 +12,9 @@ namespace PBT_205_A1
         private RabbitMqController _RabbitMqController;
         private Timer _QueryTimer;
 
+        // Define an event to notify when a position message is received
+        public event Action<string, int, int> PositionMessageReceived;
+
         public Tracker(string username, string roomName)
         {
             _EnvironmentView = new Dictionary<string, PositionMarker>();
@@ -22,7 +25,7 @@ namespace PBT_205_A1
 
         public void StartQueryTimer()
         {
-            _QueryTimer = new Timer(ProcessQueries, null, 0, 1000);
+            //_QueryTimer = new Timer(ProcessQueries, null, 0, 1000);
         }
 
         public void SubscribeToPositionTopic()
@@ -32,7 +35,7 @@ namespace PBT_205_A1
 
         public void SubscribeToQueryTopic()
         {
-            _RabbitMqController.SubscribeToPositions(HandleQueryMessage);
+            //_RabbitMqController.SubscribeToQuery(HandleQueryMessage);
         }
 
         private void HandlePositionMessage(string message)
@@ -58,6 +61,9 @@ namespace PBT_205_A1
             {
                 LogContact(newTile.UsersOnTile);
             }
+
+            // Raise the event -- position update
+            PositionMessageReceived?.Invoke(username, x, y);
         }
 
         private void LogContact(List<string> usersOnTile)
@@ -87,17 +93,13 @@ namespace PBT_205_A1
                 var contacts = _ContactLog[username];
                 contacts.Reverse();
                 var response = string.Join(",", contacts);
-                _RabbitMqController.PublishPosition(response); // Publish to 'query-response' topic
+                _RabbitMqController.PublishQueryResponse(response); // Publish to 'query-response' topic
             }
             else
             {
-                _RabbitMqController.PublishPosition(""); // Publish empty response to 'query-response' topic
+                _RabbitMqController.PublishQueryResponse(""); // Publish empty response to 'query-response' topic
             }
         }
 
-        private void ProcessQueries(object state)
-        {
-            // Periodically check for new queries
-        }
     }
 }
