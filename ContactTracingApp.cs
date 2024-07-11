@@ -152,6 +152,7 @@ namespace PBT_205_A1
         {
             int tileSize = 20;
             int gap = 1;
+            int circleDiameter = tileSize; // Set the diameter of the circle
 
             for (int x = 0; x < _GridSize; x++)
             {
@@ -161,17 +162,26 @@ namespace PBT_205_A1
                     int drawX = x * (tileSize + gap);
                     int drawY = y * (tileSize + gap);
 
+                    // Draw the tile image
                     graphics.DrawImage(tile.TileSprite, new Rectangle(drawX, drawY, tileSize, tileSize));
 
-                    // draw the users on the tile
+                    // Draw the users on the tile
                     if (tile.UsersOnTile.Count > 0)
                     {
+                        // Draw the circle
+                        graphics.FillEllipse(Brushes.LightGreen, drawX, drawY, circleDiameter, circleDiameter);
+
+                        // Draw the user text
                         string users = string.Join(",", tile.UsersOnTile);
-                        graphics.DrawString(users, this.Font, Brushes.Black, drawX, drawY);
+                        SizeF textSize = graphics.MeasureString(users, this.Font);
+                        float textX = drawX + (circleDiameter - textSize.Width) / 2;
+                        float textY = drawY + (circleDiameter - textSize.Height) / 2;
+                        graphics.DrawString(users, this.Font, Brushes.Black, textX, textY);
                     }
                 }
             }
         }
+
 
         private void UpdateGrid(string username, int x, int y)
         {
