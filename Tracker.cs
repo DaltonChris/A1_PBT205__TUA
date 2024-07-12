@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
-using Timer = System.Threading.Timer;
 
 /*
   ##################################################################
@@ -18,7 +17,6 @@ namespace PBT_205_A1
         private Dictionary<string, PositionMarker> _EnvironmentView;
         private Dictionary<string, Dictionary<string, int>> _ContactLog;
         private RabbitMqController _RabbitMqController;
-        private Timer _QueryTimer;
 
         // Define an event to notify when a position message is received
         public event Action<string, int, int> PositionMessageReceived;
@@ -28,12 +26,6 @@ namespace PBT_205_A1
             _EnvironmentView = new Dictionary<string, PositionMarker>();
             _ContactLog = new Dictionary<string, Dictionary<string, int>>();
             _RabbitMqController = new RabbitMqController(username, password);
-            StartQueryTimer();
-        }
-
-        public void StartQueryTimer()
-        {
-            // _QueryTimer = new Timer(ProcessQueries, null, 0, 1000);
         }
 
         public void SubscribeToPositionTopic()

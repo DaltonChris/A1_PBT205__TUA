@@ -23,6 +23,7 @@ namespace PBT_205_A1
         string _Password;
         PositionMarker _PositionMarker;
         Timer _MoveTimer;
+        int _UpdateSpeed = 500; // 0.5s
         int _GridSize;
         public static GridTile[,] _Grid;
         Tracker _Tracker;
@@ -31,6 +32,9 @@ namespace PBT_205_A1
         private TextBox _QueryTextBox;
         private Button _QueryButton;
         private Label _QueryResponse;
+
+        private Button _GridUpButton;
+        private Button _GridDownButton;
 
         /// <summary>
         /// Constructor
@@ -60,6 +64,8 @@ namespace PBT_205_A1
         {
             this._QueryTextBox = new TextBox();
             this._QueryButton = new Button();
+            this._GridUpButton = new Button();
+            this._GridDownButton = new Button();
             this._QueryResponse = new Label();
 
             this.SuspendLayout();
@@ -71,10 +77,24 @@ namespace PBT_205_A1
 
             // Send Query Button settings
             this._QueryButton.Location = new Point(240, 620);
-            this._QueryButton.Size = new Size(100, 20);
+            this._QueryButton.Size = new Size(100, 25);
             this._QueryButton.Name = "sendQueryButton";
             this._QueryButton.Text = "Send Query";
-            this._QueryButton.Click += new EventHandler(SendQueryButton_Click);
+            this._QueryButton.Click += new EventHandler(SendQueryButton);
+
+            // Grid size buttons
+            // Grid Up
+            this._GridUpButton.Location = new Point(350, 620);
+            this._GridUpButton.Size = new Size(65, 25);
+            this._GridUpButton.Name = "gridUpButton";
+            this._GridUpButton.Text = "Grid +";
+            this._GridUpButton.Click += new EventHandler(GridUpButton);
+            // Grid Down
+            this._GridDownButton.Location = new Point(430, 620);
+            this._GridDownButton.Size = new Size(65, 25);
+            this._GridDownButton.Name = "gridDownButton";
+            this._GridDownButton.Text = "Grid -";
+            this._GridDownButton.Click += new EventHandler(GridDownButton);
 
             // Response Label settings
             this._QueryResponse.Location = new Point(20, 660);
@@ -85,6 +105,8 @@ namespace PBT_205_A1
             this.Controls.Add(this._QueryTextBox);
             this.Controls.Add(this._QueryButton);
             this.Controls.Add(this._QueryResponse);
+            this.Controls.Add(this._GridUpButton);
+            this.Controls.Add(this._GridDownButton);
 
             // Form settings
             this.ClientSize = new Size(588, 700);
@@ -92,7 +114,7 @@ namespace PBT_205_A1
             this.Text = "Contact Tracing App";
             this.ResumeLayout(false);
         }
-        private void SendQueryButton_Click(object sender, EventArgs e)
+        private void SendQueryButton(object sender, EventArgs e)
         {
             string personIdentifier = _QueryTextBox.Text;
             if (!string.IsNullOrEmpty(personIdentifier))
@@ -106,15 +128,24 @@ namespace PBT_205_A1
                 _QueryResponse.Text = "Please enter a valid identifier.";
             }
         }
-
-        private void UpdatePositionOnGrid(string username, int x, int y)
+        private void GridUpButton(object sender, EventArgs e)
         {
-            // Update the UI grid with the new position
-            this.Invoke((MethodInvoker)delegate {
-                // Update the UI elements
-            });
+            _GridSize++;
+            ReinitializeGrid();
         }
 
+        private void GridDownButton(object sender, EventArgs e)
+        {
+            if (_GridSize > 2)
+            {
+                _GridSize--;
+                ReinitializeGrid();
+            }
+            else
+            {
+                MessageBox.Show("Grid size cannot be less than 2.");
+            }
+        }
         private void UpdateQueryResponse(string responseMessage)
         {
             this.Invoke((MethodInvoker)delegate {
@@ -127,7 +158,7 @@ namespace PBT_205_A1
         /// </summary>
         private void InitializeGrid()
         {
-            _GridSize = 4; //28
+            _GridSize = 28; //28
             _GridGenerator = new GridGenerator(_GridSize);
             _Grid = _GridGenerator.Tiles;
         }
@@ -149,7 +180,7 @@ namespace PBT_205_A1
         private void StartMoveTimer()
         {
             // Move user after 2s
-            _MoveTimer = new Timer(MoveUser, null, 2000, 2000);
+            _MoveTimer = new Timer(MoveUser, null, _UpdateSpeed, _UpdateSpeed);
         }
 
         /// <summary>
@@ -266,6 +297,15 @@ namespace PBT_205_A1
             _Grid[x, y].AddUser(username);
             this.Invalidate();
         }
+
+        private void ReinitializeGrid()
+        {
+            _GridGenerator = new GridGenerator(_GridSize);
+            _Grid = _GridGenerator.Tiles;
+            PlaceUserRandomly();
+            this.Invalidate();
+        }
+
     }
 
     /// <summary>
