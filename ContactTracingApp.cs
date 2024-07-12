@@ -18,23 +18,23 @@ namespace PBT_205_A1
     public partial class ContactTracingApp : Form
     {
         GridGenerator _GridGenerator;
-        Random _Random;
-        string _Username;
-        string _Password;
-        PositionMarker _PositionMarker;
-        Timer _MoveTimer;
-        int _UpdateSpeed = 500; // 0.5s
-        int _GridSize;
-        public static GridTile[,] _Grid;
         Tracker _Tracker;
         RabbitMqController _RabbitMqController;
+        Random _Random;
+        PositionMarker _PositionMarker;
+        Timer _MoveTimer;
 
-        private TextBox _QueryTextBox;
-        private Button _QueryButton;
-        private Label _QueryResponse;
+        string _Username;
+        string _Password;
+        int _UpdateSpeed = 150; // 0.15s
+        int _GridSize;
+        public static GridTile[,] _Grid;
 
-        private Button _GridUpButton;
-        private Button _GridDownButton;
+        TextBox _QueryTextBox;
+        Button _QueryButton;
+        Label _QueryResponse;
+        Button _GridUpButton;
+        Button _GridDownButton;
 
         /// <summary>
         /// Constructor
@@ -43,6 +43,7 @@ namespace PBT_205_A1
         {
             this._Password = password;
             this._Username = username;
+            this.DoubleBuffered = true;
             InitializeComponent();
             InitializeGrid();
             _Random = new Random();
@@ -130,8 +131,12 @@ namespace PBT_205_A1
         }
         private void GridUpButton(object sender, EventArgs e)
         {
-            _GridSize++;
-            ReinitializeGrid();
+            if (_GridSize < 29) // Max of 29 for this visual prototype (can function at higher sizes)
+            {
+                _GridSize++;
+                ReinitializeGrid();
+            }
+            return;
         }
 
         private void GridDownButton(object sender, EventArgs e)
@@ -264,7 +269,6 @@ namespace PBT_205_A1
 
                     // Draw the tile image
                     graphics.DrawImage(tile.TileSprite, new Rectangle(drawX, drawY, tileSize, tileSize));
-
                     // Draw the users on the tile
                     if (tile.UsersOnTile.Count > 0)
                     {
@@ -278,6 +282,7 @@ namespace PBT_205_A1
                         float textY = drawY + (circleDiameter - textSize.Height) / 2;
                         graphics.DrawString(users, this.Font, Brushes.Black, textX, textY);
                     }
+                    
                 }
             }
         }
@@ -303,6 +308,7 @@ namespace PBT_205_A1
             _GridGenerator = new GridGenerator(_GridSize);
             _Grid = _GridGenerator.Tiles;
             PlaceUserRandomly();
+            PublishPosition();
             this.Invalidate();
         }
 
@@ -379,12 +385,6 @@ namespace PBT_205_A1
             Username = user;
             X = x;
             Y = y;
-        }
-
-        public void Move(int newX, int newY)
-        {
-            X = newX;
-            Y = newY;
         }
     }
 }
