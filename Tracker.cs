@@ -13,32 +13,48 @@ using System.Threading;
 */
 namespace PBT_205_A1
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class Tracker
     {
         private Dictionary<string, PositionMarker> _EnvironmentView;
         private Dictionary<string, Dictionary<string, int>> _ContactLog;
         private RabbitMqController _RabbitMqController;
 
-        // Define an event to notify when a position message is received
+        // Event to notify when a position message is received
         public event Action<string, int, int> PositionMessageReceived;
 
-        public Tracker(string username, string password)
+        public Tracker(string username, string password) // Constructor
         {
             _EnvironmentView = new Dictionary<string, PositionMarker>();
             _ContactLog = new Dictionary<string, Dictionary<string, int>>();
             _RabbitMqController = new RabbitMqController(username, password);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void SubscribeToPositionTopic()
         {
             _RabbitMqController.SubscribeToPositions(HandlePositionMessage);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="personIdentifier"></param>
+        /// <param name="response"></param>
         public void SendQuery(string personIdentifier, out string response)
         {
             response = ProcessQuery(personIdentifier);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="personIdentifier"></param>
+        /// <returns></returns>
         private string ProcessQuery(string personIdentifier)
         {
             var username = personIdentifier.Trim();
@@ -61,6 +77,10 @@ namespace PBT_205_A1
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
         private void HandlePositionMessage(string message)
         {
             var parts = message.Split(',');
@@ -90,6 +110,7 @@ namespace PBT_205_A1
             PositionMessageReceived?.Invoke(username, x, y);
 
         }
+
         /// <summary>
         /// 
         /// </summary>

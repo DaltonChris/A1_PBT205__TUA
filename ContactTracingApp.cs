@@ -54,6 +54,9 @@ namespace PBT_205_A1
             StartMoveTimer();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         void InitializeTracker()
         {
             _Tracker = new Tracker(_Username, _Password);
@@ -61,6 +64,9 @@ namespace PBT_205_A1
             _Tracker.SubscribeToPositionTopic();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void InitializeComponent()
         {
             this._QueryTextBox = new TextBox();
@@ -394,10 +400,9 @@ namespace PBT_205_A1
         public int Y { get; private set; }
         public int Size { get; private set; }
         public Image TileSprite { get; private set; }
-
         public List<string> UsersOnTile { get; private set; }
 
-        public GridTile(int x, int y)
+        public GridTile(int x, int y) // Constructor
         {
             X = x;
             Y = y;
@@ -405,6 +410,10 @@ namespace PBT_205_A1
             TileSprite = new Bitmap(Resources.Back_Tile); // Tile Image
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="user"></param>
         public void AddUser(string user)
         {
             if (!UsersOnTile.Contains(user))
@@ -413,6 +422,10 @@ namespace PBT_205_A1
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="user"></param>
         public void RemoveUser(string user)
         {
             if (UsersOnTile.Contains(user))
@@ -431,7 +444,7 @@ namespace PBT_205_A1
         public int X { get; private set; }
         public int Y { get; private set; }
 
-        public PositionMarker(string user, int x, int y)
+        public PositionMarker(string user, int x, int y) // Constructor
         {
             Username = user;
             X = x;
