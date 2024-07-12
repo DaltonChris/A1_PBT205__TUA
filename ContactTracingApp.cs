@@ -17,24 +17,24 @@ namespace PBT_205_A1
     /// </summary>
     public partial class ContactTracingApp : Form
     {
-        GridGenerator _GridGenerator;
-        Tracker _Tracker;
-        RabbitMqController _RabbitMqController;
-        Random _Random;
-        PositionMarker _PositionMarker;
-        Timer _MoveTimer;
+        GridGenerator? _GridGenerator;
+        Tracker? _Tracker;
+        readonly RabbitMqController _RabbitMqController;
+        readonly Random _Random;
+        PositionMarker? _PositionMarker;
+        Timer? _MoveTimer;
 
-        string _Username;
-        string _Password;
-        int _UpdateSpeed = 50; // 0.05s
-        int _GridSize;
-        public static GridTile[,] _Grid;
+        readonly string _Username;
+        readonly string _Password;
+        readonly int _UpdateSpeed = 50; // 0.05s
+        public int _GridSize;
+        public static GridTile[,]? _Grid;
 
-        TextBox _QueryTextBox;
-        Button _QueryButton;
-        Label _QueryResponse;
-        Button _GridUpButton;
-        Button _GridDownButton;
+        TextBox? _QueryTextBox;
+        Button? _QueryButton;
+        Label? _QueryResponse;
+        Button? _GridUpButton;
+        Button? _GridDownButton;
 
         /// <summary>
         /// Constructor
@@ -59,9 +59,13 @@ namespace PBT_205_A1
         /// </summary>
         void InitializeTracker()
         {
-            _Tracker = new Tracker(_Username, _Password);
+            _Tracker = new Tracker(_Username, _Password, this);
             _Tracker.PositionMessageReceived += UpdateGrid;
             _Tracker.SubscribeToPositionTopic();
+            _Tracker.SubscribeToQueryTopic();
+            _Tracker.QueryMessageReceived += UpdateQueryResponse;
+            _Tracker.GridSizeUpdated += HandleGridSizeUpdate;
+
         }
 
         /// <summary>
@@ -132,9 +136,8 @@ namespace PBT_205_A1
             string personIdentifier = _QueryTextBox.Text;
             if (!string.IsNullOrEmpty(personIdentifier))
             {
-                // Directly call Tracker to get the query response
-                _Tracker.SendQuery(personIdentifier, out string response);
-                UpdateQueryResponse(response);
+                // Get tracker to publish query
+                _Tracker.SendQuery(personIdentifier);
             }
             else
             {
@@ -149,17 +152,17 @@ namespace PBT_205_A1
         /// <param name="e"></param>
         private void GridUpButton(object sender, EventArgs e)
         {
-            if (_GridSize <= 28) // Max of 30 for this visual prototype (can function at higher sizes)
+            if (_GridSize < 30)
             {
-                _GridSize += 2;
-                ReinitializeGrid();
+                int newSize = _GridSize += 2;
+                _Tracker.SendGridSizeUpdate(newSize); // Notify other clients
+                //ReinitializeGrid();
             }
             else
             {
                 MessageBox.Show("Grid size Is capped to 30 for this prototype :)");
             }
         }
-
         /// <summary>
         /// 
         /// </summary>
@@ -167,10 +170,11 @@ namespace PBT_205_A1
         /// <param name="e"></param>
         private void GridDownButton(object sender, EventArgs e)
         {
-            if (_GridSize >= 4)
+            if (_GridSize > 2)
             {
-                _GridSize -= 2;
-                ReinitializeGrid();
+                int newSize =_GridSize -= 2;
+                _Tracker.SendGridSizeUpdate(newSize); // Notify other clients
+                //ReinitializeGrid();
             }
             else
             {
@@ -179,10 +183,10 @@ namespace PBT_205_A1
         }
 
         /// <summary>
-        /// 
+        /// Update the query label when Event is Invoked
         /// </summary>
-        /// <param name="responseMessage"></param>
-        private void UpdateQueryResponse(string responseMessage)
+        /// <param name="responseMessage"> The queries response </param>
+        public void UpdateQueryResponse(string responseMessage)
         {
             this.Invoke((MethodInvoker)delegate {
                 _QueryResponse.Text = "Query Response: " + responseMessage;
@@ -204,10 +208,10 @@ namespace PBT_205_A1
         /// </summary>
         private void PlaceUserRandomly()
         {
-            int x = _Random.Next(_GridSize - 1);
-            int y = _Random.Next(_GridSize - 1 );
+            int x = _Random.Next(_GridSize - 5 );
+            int y = _Random.Next(_GridSize - 5 );
             _PositionMarker = new PositionMarker(_Username, x, y);
-            _Grid[x, y].AddUser(_Username);
+            _Grid ? [x, y].AddUser(_Username);
         }
 
         /// <summary>
@@ -300,6 +304,9 @@ namespace PBT_205_A1
         /// <param name="graphics"></param>
         private void DrawGrid(Graphics graphics)
         {
+            if (_Grid == null || _Grid.GetLength(0) == 0 || _Grid.GetLength(1) == 0)
+                return; // No grid to draw
+
             int tileSize = 20;
             int gap = 1;
             int circleDiameter = tileSize; // Set the diameter of the circle
@@ -308,29 +315,39 @@ namespace PBT_205_A1
             {
                 for (int y = 0; y < _GridSize; y++)
                 {
-                    GridTile tile = _Grid[x, y];
-                    int drawX = x * (tileSize + gap);
-                    int drawY = y * (tileSize + gap);
-
-                    // Draw the tile image
-                    graphics.DrawImage(tile.TileSprite, new Rectangle(drawX, drawY, tileSize, tileSize));
-                    // Draw the users on the tile
-                    if (tile.UsersOnTile.Count > 0)
+                    // Ensure that the grid indices are within bounds
+                    if (x >= 0 && x < _Grid.GetLength(0) && y >= 0 && y < _Grid.GetLength(1))
                     {
-                        // Draw the circle
-                        graphics.FillEllipse(Brushes.LightGreen, drawX, drawY, circleDiameter, circleDiameter);
+                        GridTile tile = _Grid[x, y];
+                        int drawX = x * (tileSize + gap);
+                        int drawY = y * (tileSize + gap);
 
-                        // Draw the user text
-                        string users = string.Join(",", tile.UsersOnTile);
-                        SizeF textSize = graphics.MeasureString(users, this.Font);
-                        float textX = drawX + (circleDiameter - textSize.Width) / 2;
-                        float textY = drawY + (circleDiameter - textSize.Height) / 2;
-                        graphics.DrawString(users, this.Font, Brushes.Black, textX, textY);
+                        // Draw the tile image
+                        graphics.DrawImage(tile.TileSprite, new Rectangle(drawX, drawY, tileSize, tileSize));
+                        // Draw the users on the tile
+                        if (tile.UsersOnTile.Count > 0)
+                        {
+                            // Draw the circle
+                            graphics.FillEllipse(Brushes.LightGreen, drawX, drawY, circleDiameter, circleDiameter);
+
+                            // Draw the user text
+                            string users = string.Join(",", tile.UsersOnTile);
+                            SizeF textSize = graphics.MeasureString(users, this.Font);
+                            float textX = drawX + (circleDiameter - textSize.Width) / 2;
+                            float textY = drawY + (circleDiameter - textSize.Height) / 2;
+                            graphics.DrawString(users, this.Font, Brushes.Black, textX, textY);
+                        }
                     }
-                    
                 }
             }
         }
+
+        public void HandleGridSizeUpdate(int newSize)
+        {
+            
+            ReinitializeGrid(newSize);
+        }
+
 
         /// <summary>
         /// Udates the Position marker to the changed tile
@@ -344,17 +361,22 @@ namespace PBT_205_A1
             {
                 tile.RemoveUser(username);
             }
-            _Grid[x, y].AddUser(username);
+            // Ensure that the grid indices are within bounds
+            if (x >= 0 && x < _Grid.GetLength(0) && y >= 0 && y < _Grid.GetLength(1))
+            {
+                _Grid[x, y].AddUser(username);
+            }
             this.Invalidate();
         }
 
         /// <summary>
-        /// 
+        /// Reinitializes the grid with a new size and restarts the move timer with a delay.
         /// </summary>
-        private void ReinitializeGrid()
+        private async void ReinitializeGrid(int newSize)
         {
             // Stop the move timer before changing the grid
             _MoveTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+            _GridSize = newSize;
 
             // Reinitialize the grid
             _GridGenerator = new GridGenerator(_GridSize);
@@ -362,12 +384,14 @@ namespace PBT_205_A1
             PlaceUserRandomly();
             PublishPosition();
 
-            // Restart the move timer
+            // Delay
+            await Task.Delay(500);
+
             StartMoveTimer();
 
-            // Redraw the form
             this.Invalidate();
         }
+
 
     }
 
@@ -406,7 +430,7 @@ namespace PBT_205_A1
         {
             X = x;
             Y = y;
-            UsersOnTile = new List<string>();
+            UsersOnTile = [];
             TileSprite = new Bitmap(Resources.Back_Tile); // Tile Image
         }
 
