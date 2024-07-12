@@ -119,7 +119,7 @@ namespace PBT_205_A1
             var y = int.Parse(parts[2]);
 
             // Check if the new position is within bounds before updating
-            if (x < 0 || x >= ContactTracingApp._GridSize || y < 0 || y >= ContactTracingApp._GridSize)
+            if (x < 0 || x >= _ContactTracingApp._GridSize || y < 0 || y >= _ContactTracingApp._GridSize)
             {
                 // Log or handle out-of-bounds error
                 Debug.WriteLine($"Received out-of-bounds position update for user {username}: ({x}, {y})");

@@ -28,7 +28,7 @@ namespace PBT_205_A1
         readonly string _Password;
         readonly int _UpdateSpeed = 50; // 0.05s
         public int _GridSize;
-        public static GridTile[,]? _Grid;
+        public GridTile[,]? _Grid;
 
         TextBox? _QueryTextBox;
         Button? _QueryButton;
@@ -133,16 +133,20 @@ namespace PBT_205_A1
         /// <param name="e"></param>
         private void SendQueryButton(object sender, EventArgs e)
         {
-            string personIdentifier = _QueryTextBox.Text;
-            if (!string.IsNullOrEmpty(personIdentifier))
+            if (_QueryResponse != null && _QueryTextBox != null)
             {
-                // Get tracker to publish query
-                _Tracker.SendQuery(personIdentifier);
+                string personIdentifier = _QueryTextBox.Text;
+                if (!string.IsNullOrEmpty(personIdentifier) && _Tracker != null)
+                {
+                    // Get tracker to publish query
+                    _Tracker.SendQuery(personIdentifier);
+                }
+                else
+                {
+                    _QueryResponse.Text = "Please enter a valid identifier.";
+                }
             }
-            else
-            {
-                _QueryResponse.Text = "Please enter a valid identifier.";
-            }
+
         }
 
         /// <summary>
@@ -152,7 +156,7 @@ namespace PBT_205_A1
         /// <param name="e"></param>
         private void GridUpButton(object sender, EventArgs e)
         {
-            if (_GridSize < 30)
+            if (_GridSize < 30 && _Tracker != null)
             {
                 int newSize = _GridSize += 2;
                 _Tracker.SendGridSizeUpdate(newSize); // Notify other clients
@@ -170,7 +174,7 @@ namespace PBT_205_A1
         /// <param name="e"></param>
         private void GridDownButton(object sender, EventArgs e)
         {
-            if (_GridSize > 2)
+            if (_GridSize > 2 && _Tracker != null)
             {
                 int newSize =_GridSize -= 2;
                 _Tracker.SendGridSizeUpdate(newSize); // Notify other clients
@@ -189,7 +193,8 @@ namespace PBT_205_A1
         public void UpdateQueryResponse(string responseMessage)
         {
             this.Invoke((MethodInvoker)delegate {
-                _QueryResponse.Text = "Query Response: " + responseMessage;
+                if(_QueryResponse != null) {_QueryResponse.Text = "Query Response: " + responseMessage;}
+                
             });
         }
 
@@ -227,22 +232,22 @@ namespace PBT_205_A1
         /// Method to move the user to its next tile
         /// </summary>
         /// <param name="state"></param>
-        private void MoveUser(object state)
+        private void MoveUser(object? state)
         {
             PositionMarker newPosition = GetNewPosition(_PositionMarker);
 
             // Check if the new position is within bounds
-            if (newPosition.X >= 0 && newPosition.X < _GridSize && newPosition.Y >= 0 && newPosition.Y < _GridSize)
+            if (newPosition.X >= 0 && newPosition.X < _GridSize && newPosition.Y >= 0 && newPosition.Y < _GridSize && _PositionMarker != null)
             {
                 // Remove user from old position
-                _Grid[_PositionMarker.X, _PositionMarker.Y].RemoveUser(_Username);
+                _Grid?[_PositionMarker.X, _PositionMarker.Y].RemoveUser(_Username);
 
                 // Add user to new position
-                _Grid[newPosition.X, newPosition.Y].AddUser(_Username);
+                _Grid?[newPosition.X, newPosition.Y].AddUser(_Username);
                 _PositionMarker = newPosition;
 
                 PublishPosition();
-                this.Invalidate();
+                Invalidate();
             }
             else
             {
@@ -284,7 +289,7 @@ namespace PBT_205_A1
         /// </summary>
         private void PublishPosition()
         {
-            var positionMessage = $"{_Username},{_PositionMarker.X},{_PositionMarker.Y}";
+            var positionMessage = $"{_Username},{_PositionMarker?.X},{_PositionMarker?.Y}";
             _RabbitMqController.PublishPosition(positionMessage);
         }
 
@@ -357,16 +362,19 @@ namespace PBT_205_A1
         /// <param name="y"> new y pos </param>
         private void UpdateGrid(string username, int x, int y)
         {
-            foreach (var tile in _Grid)
+            if(_Grid != null)
             {
-                tile.RemoveUser(username);
+                foreach (var tile in _Grid)
+                {
+                    tile.RemoveUser(username);
+                }
+                // Ensure that the grid indices are within bounds
+                if (x >= 0 && x < _Grid.GetLength(0) && y >= 0 && y < _Grid.GetLength(1))
+                {
+                    _Grid[x, y].AddUser(username);
+                }
+                this.Invalidate();
             }
-            // Ensure that the grid indices are within bounds
-            if (x >= 0 && x < _Grid.GetLength(0) && y >= 0 && y < _Grid.GetLength(1))
-            {
-                _Grid[x, y].AddUser(username);
-            }
-            this.Invalidate();
         }
 
         /// <summary>
@@ -389,7 +397,7 @@ namespace PBT_205_A1
 
             StartMoveTimer();
 
-            this.Invalidate();
+            Invalidate();
         }
 
 
