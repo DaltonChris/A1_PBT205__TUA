@@ -72,12 +72,12 @@ namespace PBT_205_A1
             this.SuspendLayout();
 
             // Query TextBox settings
-            this._QueryTextBox.Location = new Point(20, 620);
+            this._QueryTextBox.Location = new Point(20, 640);
             this._QueryTextBox.Size = new Size(200, 20);
             this._QueryTextBox.Name = "queryTextBox";
 
             // Send Query Button settings
-            this._QueryButton.Location = new Point(240, 620);
+            this._QueryButton.Location = new Point(240, 640);
             this._QueryButton.Size = new Size(100, 25);
             this._QueryButton.Name = "sendQueryButton";
             this._QueryButton.Text = "Send Query";
@@ -85,20 +85,20 @@ namespace PBT_205_A1
 
             // Grid size buttons
             // Grid Up
-            this._GridUpButton.Location = new Point(350, 620);
+            this._GridUpButton.Location = new Point(350, 640);
             this._GridUpButton.Size = new Size(65, 25);
             this._GridUpButton.Name = "gridUpButton";
             this._GridUpButton.Text = "Grid +";
             this._GridUpButton.Click += new EventHandler(GridUpButton);
             // Grid Down
-            this._GridDownButton.Location = new Point(430, 620);
+            this._GridDownButton.Location = new Point(430, 640);
             this._GridDownButton.Size = new Size(65, 25);
             this._GridDownButton.Name = "gridDownButton";
             this._GridDownButton.Text = "Grid -";
             this._GridDownButton.Click += new EventHandler(GridDownButton);
 
             // Response Label settings
-            this._QueryResponse.Location = new Point(20, 660);
+            this._QueryResponse.Location = new Point(20, 670);
             this._QueryResponse.Size = new Size(560, 20);
             this._QueryResponse.Name = "responseLabel";
 
@@ -110,11 +110,17 @@ namespace PBT_205_A1
             this.Controls.Add(this._GridDownButton);
 
             // Form settings
-            this.ClientSize = new Size(588, 700);
+            this.ClientSize = new Size(628, 700);
             this.Name = "ContactTracingApp";
             this.Text = "Contact Tracing App";
             this.ResumeLayout(false);
         }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SendQueryButton(object sender, EventArgs e)
         {
             string personIdentifier = _QueryTextBox.Text;
@@ -129,21 +135,35 @@ namespace PBT_205_A1
                 _QueryResponse.Text = "Please enter a valid identifier.";
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void GridUpButton(object sender, EventArgs e)
         {
-            if (_GridSize < 29) // Max of 29 for this visual prototype (can function at higher sizes)
+            if (_GridSize <= 28) // Max of 30 for this visual prototype (can function at higher sizes)
             {
-                _GridSize++;
+                _GridSize += 2;
                 ReinitializeGrid();
             }
-            return;
+            else
+            {
+                MessageBox.Show("Grid size Is capped to 30 for this prototype :)");
+            }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void GridDownButton(object sender, EventArgs e)
         {
-            if (_GridSize > 2)
+            if (_GridSize >= 4)
             {
-                _GridSize--;
+                _GridSize -= 2;
                 ReinitializeGrid();
             }
             else
@@ -151,6 +171,11 @@ namespace PBT_205_A1
                 MessageBox.Show("Grid size cannot be less than 2.");
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="responseMessage"></param>
         private void UpdateQueryResponse(string responseMessage)
         {
             this.Invoke((MethodInvoker)delegate {
@@ -173,8 +198,8 @@ namespace PBT_205_A1
         /// </summary>
         private void PlaceUserRandomly()
         {
-            int x = _Random.Next(_GridSize);
-            int y = _Random.Next(_GridSize);
+            int x = _Random.Next(_GridSize - 1);
+            int y = _Random.Next(_GridSize - 1 );
             _PositionMarker = new PositionMarker(_Username, x, y);
             _Grid[x, y].AddUser(_Username);
         }
@@ -184,7 +209,7 @@ namespace PBT_205_A1
         /// </summary>
         private void StartMoveTimer()
         {
-            // Move user after 2s
+            // Move user after set speed "_UpdateSpeed"
             _MoveTimer = new Timer(MoveUser, null, _UpdateSpeed, _UpdateSpeed);
         }
 
@@ -215,7 +240,6 @@ namespace PBT_205_A1
                 Debug.WriteLine($"New position out of bounds: ({newPosition.X}, {newPosition.Y})");
             }
         }
-
 
         /// <summary>
         /// Method to randomly select a neighboring tile to move to
@@ -318,12 +342,24 @@ namespace PBT_205_A1
             this.Invalidate();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void ReinitializeGrid()
         {
+            // Stop the move timer before changing the grid
+            _MoveTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+
+            // Reinitialize the grid
             _GridGenerator = new GridGenerator(_GridSize);
             _Grid = _GridGenerator.Tiles;
             PlaceUserRandomly();
             PublishPosition();
+
+            // Restart the move timer
+            StartMoveTimer();
+
+            // Redraw the form
             this.Invalidate();
         }
 

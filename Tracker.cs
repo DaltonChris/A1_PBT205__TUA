@@ -68,34 +68,27 @@ namespace PBT_205_A1
             var x = int.Parse(parts[1]);
             var y = int.Parse(parts[2]);
 
-            // Check if the new position is within the bounds of the grid
-            if (x >= 0 && x < ContactTracingApp._Grid.GetLength(0) && y >= 0 && y < ContactTracingApp._Grid.GetLength(1))
+
+            if (_EnvironmentView.ContainsKey(username))
             {
-                if (_EnvironmentView.ContainsKey(username))
-                {
-                    var oldPosition = _EnvironmentView[username];
-                    var oldTile = ContactTracingApp._Grid[oldPosition.X, oldPosition.Y];
-                    oldTile.RemoveUser(username);
-                }
-
-                var newPosition = new PositionMarker(username, x, y);
-                _EnvironmentView[username] = newPosition;
-                var newTile = ContactTracingApp._Grid[x, y];
-                newTile.AddUser(username);
-
-                if (newTile.UsersOnTile.Count > 1)
-                {
-                    LogContact(newTile.UsersOnTile);
-                }
-
-                // Raise the event -- position update
-                PositionMessageReceived?.Invoke(username, x, y);
+                var oldPosition = _EnvironmentView[username];
+                var oldTile = ContactTracingApp._Grid[oldPosition.X, oldPosition.Y];
+                oldTile.RemoveUser(username);
             }
-            else
+
+            var newPosition = new PositionMarker(username, x, y);
+            _EnvironmentView[username] = newPosition;
+            var newTile = ContactTracingApp._Grid[x, y];
+            newTile.AddUser(username);
+
+            if (newTile.UsersOnTile.Count > 1)
             {
-                // Optionally, log or handle the out-of-bounds error
-                Debug.WriteLine($"Position out of bounds: ({x}, {y}) for user {username}");
+                LogContact(newTile.UsersOnTile);
             }
+
+            // Raise the event -- position update
+            PositionMessageReceived?.Invoke(username, x, y);
+
         }
         /// <summary>
         /// 
