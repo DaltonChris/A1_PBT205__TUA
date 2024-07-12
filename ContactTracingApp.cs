@@ -2,6 +2,14 @@
 using System.Diagnostics;
 using Timer = System.Threading.Timer;
 
+/*
+  ##################################################################
+  ### Dalton Christopher - ID: A00122255                         ###
+  ### TUA - PBT205—Project-based Learning Studio: Technology     ###
+  ### - Assesment - 1                                            ###
+  ### - 06/2024                                                  ###
+  ##################################################################
+*/
 namespace PBT_205_A1
 {
     /// <summary>
@@ -19,6 +27,10 @@ namespace PBT_205_A1
         public static GridTile[,] _Grid;
         Tracker _Tracker;
         RabbitMqController _RabbitMqController;
+
+        private TextBox _QueryTextBox;
+        private Button _QueryButton;
+        private Label _QueryResponse;
 
         /// <summary>
         /// Constructor
@@ -42,17 +54,72 @@ namespace PBT_205_A1
             _Tracker = new Tracker(_Username, _Password);
             _Tracker.PositionMessageReceived += UpdateGrid;
             _Tracker.SubscribeToPositionTopic();
-            _Tracker.SubscribeToQueryTopic();
         }
 
         private void InitializeComponent()
         {
+            this._QueryTextBox = new TextBox();
+            this._QueryButton = new Button();
+            this._QueryResponse = new Label();
+
             this.SuspendLayout();
+
+            // Query TextBox settings
+            this._QueryTextBox.Location = new Point(20, 620);
+            this._QueryTextBox.Size = new Size(200, 20);
+            this._QueryTextBox.Name = "queryTextBox";
+
+            // Send Query Button settings
+            this._QueryButton.Location = new Point(240, 620);
+            this._QueryButton.Size = new Size(100, 20);
+            this._QueryButton.Name = "sendQueryButton";
+            this._QueryButton.Text = "Send Query";
+            this._QueryButton.Click += new EventHandler(SendQueryButton_Click);
+
+            // Response Label settings
+            this._QueryResponse.Location = new Point(20, 660);
+            this._QueryResponse.Size = new Size(560, 20);
+            this._QueryResponse.Name = "responseLabel";
+
+            // Add controls to the form
+            this.Controls.Add(this._QueryTextBox);
+            this.Controls.Add(this._QueryButton);
+            this.Controls.Add(this._QueryResponse);
+
             // Form settings
             this.ClientSize = new Size(588, 700);
             this.Name = "ContactTracingApp";
             this.Text = "Contact Tracing App";
             this.ResumeLayout(false);
+        }
+        private void SendQueryButton_Click(object sender, EventArgs e)
+        {
+            string personIdentifier = _QueryTextBox.Text;
+            if (!string.IsNullOrEmpty(personIdentifier))
+            {
+                // Directly call Tracker to get the query response
+                _Tracker.SendQuery(personIdentifier, out string response);
+                UpdateQueryResponse(response);
+            }
+            else
+            {
+                _QueryResponse.Text = "Please enter a valid identifier.";
+            }
+        }
+
+        private void UpdatePositionOnGrid(string username, int x, int y)
+        {
+            // Update the UI grid with the new position
+            this.Invoke((MethodInvoker)delegate {
+                // Update the UI elements
+            });
+        }
+
+        private void UpdateQueryResponse(string responseMessage)
+        {
+            this.Invoke((MethodInvoker)delegate {
+                _QueryResponse.Text = "Query Response: " + responseMessage;
+            });
         }
 
         /// <summary>
@@ -60,7 +127,7 @@ namespace PBT_205_A1
         /// </summary>
         private void InitializeGrid()
         {
-            _GridSize = 28;
+            _GridSize = 4; //28
             _GridGenerator = new GridGenerator(_GridSize);
             _Grid = _GridGenerator.Tiles;
         }

@@ -16,11 +16,12 @@ namespace PBT_205_A1
         private readonly string _RoutingKey = "position_room";
         private readonly string queueName;
         private readonly string queryQueueName;
-        private readonly string queryResponseExchange = "user.query.response";
+        private readonly string queryResponseExchange = "user_querys";
 
         public RabbitMqController(string username, string password)
         {
             this.queueName = $"Positions_Queue_{username}";
+            this.queryQueueName = $"Query_Queue_{username}";
             var factory = new ConnectionFactory() { HostName = "localhost",
             };
             connection = factory.CreateConnection();
@@ -34,6 +35,17 @@ namespace PBT_205_A1
                                 arguments: null);
             channel.QueueBind(queue: queueName,
                             exchange: exchangeName,
+                            routingKey: _RoutingKey);
+
+            //Query topic/que
+            channel.ExchangeDeclare(exchange: queryResponseExchange,
+                            type: ExchangeType.Topic);
+            channel.QueueDeclare(queue: queryQueueName, durable: false,
+                                exclusive: false,
+                                autoDelete: true,
+                                arguments: null);
+            channel.QueueBind(queue: queryQueueName,
+                            exchange: queryResponseExchange,
                             routingKey: _RoutingKey);
 
         }

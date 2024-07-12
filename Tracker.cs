@@ -3,29 +3,37 @@ using System.Collections.Generic;
 using System.Threading;
 using Timer = System.Threading.Timer;
 
+/*
+  ##################################################################
+  ### Dalton Christopher - ID: A00122255                         ###
+  ### TUA - PBT205—Project-based Learning Studio: Technology     ###
+  ### - Assessment - 1                                           ###
+  ### - 06/2024                                                  ###
+  ##################################################################
+*/
 namespace PBT_205_A1
 {
     public class Tracker
     {
         private Dictionary<string, PositionMarker> _EnvironmentView;
-        private Dictionary<string, List<string>> _ContactLog;
+        private Dictionary<string, Dictionary<string, int>> _ContactLog;
         private RabbitMqController _RabbitMqController;
         private Timer _QueryTimer;
 
         // Define an event to notify when a position message is received
         public event Action<string, int, int> PositionMessageReceived;
 
-        public Tracker(string username, string roomName)
+        public Tracker(string username, string password)
         {
             _EnvironmentView = new Dictionary<string, PositionMarker>();
-            _ContactLog = new Dictionary<string, List<string>>();
-            _RabbitMqController = new RabbitMqController(username, roomName);
+            _ContactLog = new Dictionary<string, Dictionary<string, int>>();
+            _RabbitMqController = new RabbitMqController(username, password);
             StartQueryTimer();
         }
 
         public void StartQueryTimer()
         {
-            //_QueryTimer = new Timer(ProcessQueries, null, 0, 1000);
+            // _QueryTimer = new Timer(ProcessQueries, null, 0, 1000);
         }
 
         public void SubscribeToPositionTopic()
@@ -33,9 +41,31 @@ namespace PBT_205_A1
             _RabbitMqController.SubscribeToPositions(HandlePositionMessage);
         }
 
-        public void SubscribeToQueryTopic()
+        public void SendQuery(string personIdentifier, out string response)
         {
-            //_RabbitMqController.SubscribeToQuery(HandleQueryMessage);
+            response = ProcessQuery(personIdentifier);
+        }
+
+        private string ProcessQuery(string personIdentifier)
+        {
+            var username = personIdentifier.Trim();
+            if (_ContactLog.ContainsKey(username))
+            {
+                var contacts = _ContactLog[username];
+                List<string> contactStrings = new List<string>();
+
+                foreach (var contact in contacts)
+                {
+                    string contactString = $"{username} has contacted {contact.Key} {contact.Value} time(s)";
+                    contactStrings.Add(contactString);
+                }
+
+                return string.Join("\n", contactStrings);
+            }
+            else
+            {
+                return "No contacts found.";
+            }
         }
 
         private void HandlePositionMessage(string message)
@@ -72,34 +102,21 @@ namespace PBT_205_A1
             {
                 if (!_ContactLog.ContainsKey(user))
                 {
-                    _ContactLog[user] = new List<string>();
+                    _ContactLog[user] = new Dictionary<string, int>();
                 }
 
                 foreach (var otherUser in usersOnTile)
                 {
-                    if (user != otherUser && !_ContactLog[user].Contains(otherUser))
+                    if (user != otherUser)
                     {
-                        _ContactLog[user].Add(otherUser);
+                        if (!_ContactLog[user].ContainsKey(otherUser))
+                        {
+                            _ContactLog[user][otherUser] = 0;
+                        }
+                        _ContactLog[user][otherUser]++;
                     }
                 }
             }
         }
-
-        private void HandleQueryMessage(string message)
-        {
-            var username = message.Trim();
-            if (_ContactLog.ContainsKey(username))
-            {
-                var contacts = _ContactLog[username];
-                contacts.Reverse();
-                var response = string.Join(",", contacts);
-                _RabbitMqController.PublishQueryResponse(response); // Publish to 'query-response' topic
-            }
-            else
-            {
-                _RabbitMqController.PublishQueryResponse(""); // Publish empty response to 'query-response' topic
-            }
-        }
-
     }
 }
