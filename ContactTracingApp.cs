@@ -26,7 +26,7 @@ namespace PBT_205_A1
 
         string _Username;
         string _Password;
-        int _UpdateSpeed = 150; // 0.15s
+        int _UpdateSpeed = 50; // 0.05s
         int _GridSize;
         public static GridTile[,] _Grid;
 
@@ -163,7 +163,7 @@ namespace PBT_205_A1
         /// </summary>
         private void InitializeGrid()
         {
-            _GridSize = 28; //28
+            _GridSize = 10; //28
             _GridGenerator = new GridGenerator(_GridSize);
             _Grid = _GridGenerator.Tiles;
         }
@@ -195,12 +195,27 @@ namespace PBT_205_A1
         private void MoveUser(object state)
         {
             PositionMarker newPosition = GetNewPosition(_PositionMarker);
-            _Grid[_PositionMarker.X, _PositionMarker.Y].RemoveUser(_Username);
-            _Grid[newPosition.X, newPosition.Y].AddUser(_Username);
-            _PositionMarker = newPosition;
-            PublishPosition();
-            this.Invalidate();
+
+            // Check if the new position is within bounds
+            if (newPosition.X >= 0 && newPosition.X < _GridSize && newPosition.Y >= 0 && newPosition.Y < _GridSize)
+            {
+                // Remove user from old position
+                _Grid[_PositionMarker.X, _PositionMarker.Y].RemoveUser(_Username);
+
+                // Add user to new position
+                _Grid[newPosition.X, newPosition.Y].AddUser(_Username);
+                _PositionMarker = newPosition;
+
+                PublishPosition();
+                this.Invalidate();
+            }
+            else
+            {
+                // Log or handle out-of-bounds error
+                Debug.WriteLine($"New position out of bounds: ({newPosition.X}, {newPosition.Y})");
+            }
         }
+
 
         /// <summary>
         /// Method to randomly select a neighboring tile to move to
