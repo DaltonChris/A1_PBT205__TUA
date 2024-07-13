@@ -16,7 +16,7 @@ namespace PBT_205_A1
         private readonly string _RoutingKey = "position_room";
         private readonly string _QueueName;
         private readonly string _QueryQueueName;
-        private readonly string _QueryResponseExchange = "user_querys";
+        private readonly string _QueryExchange = "user_querys";
 
         public RabbitMqController(string username, string password) // Contructor
         {
@@ -39,34 +39,41 @@ namespace PBT_205_A1
                             routingKey: _RoutingKey);
 
             //Query topic/queue
-            _Channel.ExchangeDeclare(exchange: _QueryResponseExchange,
+            _Channel.ExchangeDeclare(exchange: _QueryExchange,
                             type: ExchangeType.Topic);
             _Channel.QueueDeclare(queue: _QueryQueueName, durable: false,
                                 exclusive: false,
                                 autoDelete: true,
                                 arguments: null);
             _Channel.QueueBind(queue: _QueryQueueName,
-                            exchange: _QueryResponseExchange,
+                            exchange: _QueryExchange,
                             routingKey: _RoutingKey);
         }
 
         /// <summary>
-        /// 
+        /// Method to publish a new position msg (also grid size update)
         /// </summary>
-        /// <param name="message"></param>
+        /// <param name="message"> the position </param>
         public void PublishPosition(string message)
         {
             var body = Encoding.UTF8.GetBytes(message);
             _Channel.BasicPublish(exchange: _ExchangeName, routingKey: _RoutingKey, basicProperties: null, body: body);
         }
 
-
+        /// <summary>
+        /// Method to publish to the query exchange
+        /// </summary>
+        /// <param name="message"> the query </param>
         public void PublishQuery(string message)
         {
             var body = Encoding.UTF8.GetBytes(message);
-            _Channel.BasicPublish(exchange: _QueryResponseExchange, routingKey: _RoutingKey, basicProperties: null, body: body);
+            _Channel.BasicPublish(exchange: _QueryExchange, routingKey: _RoutingKey, basicProperties: null, body: body);
         }
 
+        /// <summary>
+        /// Method to subscribe to the postion queue/ exchange
+        /// </summary>
+        /// <param name="callback"></param>
         public void SubscribeToPositions(Action<string> callback)
         {
             var consumer = new EventingBasicConsumer(_Channel);
@@ -79,6 +86,10 @@ namespace PBT_205_A1
             _Channel.BasicConsume(queue: _QueueName, autoAck: true, consumer: consumer);
         }
 
+        /// <summary>
+        /// Method to subscribe to the query queue/ exchange
+        /// </summary>
+        /// <param name="callback"></param>
         public void SubscribeToQuery(Action<string> callback)
         {
             var consumer = new EventingBasicConsumer(_Channel);
@@ -91,6 +102,9 @@ namespace PBT_205_A1
             _Channel.BasicConsume(queue: _QueryQueueName, autoAck: true, consumer: consumer);
         }
 
+        /// <summary>
+        /// Closes connection.
+        /// </summary>
         public void Close()
         {
             _Channel.Close();

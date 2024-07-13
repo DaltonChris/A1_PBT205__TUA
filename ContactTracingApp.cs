@@ -48,16 +48,16 @@ namespace PBT_205_A1
             InitializeGrid();
             _Random = new Random();
             _RabbitMqController = new RabbitMqController(_Username, _Password);
-            InitializeTracker();
+            InitTracker();
             PlaceUserRandomly();
             PublishPosition();
             StartMoveTimer();
         }
 
         /// <summary>
-        /// 
+        /// Initalises tracker instance
         /// </summary>
-        void InitializeTracker()
+        void InitTracker()
         {
             _Tracker = new Tracker(_Username, _Password, this);
             _Tracker.PositionMessageReceived += UpdateGrid;
@@ -69,7 +69,7 @@ namespace PBT_205_A1
         }
 
         /// <summary>
-        /// 
+        /// Init windows forms ui
         /// </summary>
         private void InitializeComponent()
         {
@@ -127,7 +127,7 @@ namespace PBT_205_A1
         }
         
         /// <summary>
-        /// 
+        /// Button handeler for sending a query managed by the tracker class
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -150,7 +150,7 @@ namespace PBT_205_A1
         }
 
         /// <summary>
-        /// 
+        /// Button to upsize the grid by 2x2 each press with a hard limit
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -167,8 +167,9 @@ namespace PBT_205_A1
                 MessageBox.Show("Grid size Is capped to 30 for this prototype :)");
             }
         }
+
         /// <summary>
-        /// 
+        /// Button to downsize the grid by 2x2 each press with a min size of 2
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -213,8 +214,8 @@ namespace PBT_205_A1
         /// </summary>
         private void PlaceUserRandomly()
         {
-            int x = _Random.Next(_GridSize - 5 );
-            int y = _Random.Next(_GridSize - 5 );
+            int x = _Random.Next(_GridSize - 1);
+            int y = _Random.Next(_GridSize - 1);
             _PositionMarker = new PositionMarker(_Username, x, y);
             _Grid ? [x, y].AddUser(_Username);
         }
@@ -260,7 +261,7 @@ namespace PBT_205_A1
         /// Method to randomly select a neighboring tile to move to
         /// </summary>
         /// <param name="positionMarker"> The User's Marker to be moved </param>
-        /// <returns></returns>
+        /// <returns> the updated position marker </returns>
         private PositionMarker GetNewPosition(PositionMarker positionMarker)
         {
             int newX, newY;
@@ -347,9 +348,12 @@ namespace PBT_205_A1
             }
         }
 
+        /// <summary>
+        /// Re-init the grid if a size update is consumed
+        /// </summary>
+        /// <param name="newSize"></param>
         public void HandleGridSizeUpdate(int newSize)
         {
-            
             ReinitializeGrid(newSize);
         }
 
@@ -378,7 +382,7 @@ namespace PBT_205_A1
         }
 
         /// <summary>
-        /// Reinitializes the grid with a new size and restarts the move timer with a delay.
+        /// Reinitializes the grid with a new size and restarts the move timer 
         /// </summary>
         private async void ReinitializeGrid(int newSize)
         {
@@ -391,9 +395,6 @@ namespace PBT_205_A1
             _Grid = _GridGenerator.Tiles;
             PlaceUserRandomly();
             PublishPosition();
-
-            // Delay
-            await Task.Delay(500);
 
             StartMoveTimer();
 

@@ -14,7 +14,8 @@ using System.Threading;
 namespace PBT_205_A1
 {
     /// <summary>
-    /// 
+    /// Tracker class manages logging contact and handles the processing / publishing of messages to 
+    /// rabbitmq handled by contact tracing app
     /// </summary>
     public class Tracker
     {
@@ -38,6 +39,10 @@ namespace PBT_205_A1
             _ContactTracingApp = contactTracingApp;
         }
 
+        /// <summary>
+        /// Method to send an update of the grid size 
+        /// </summary>
+        /// <param name="newSize"> The new grid size </param>
         public void SendGridSizeUpdate(int newSize)
         {
             _RabbitMqController.PublishPosition($"GRID_SIZE,{newSize}");
@@ -45,35 +50,38 @@ namespace PBT_205_A1
 
 
         /// <summary>
-        /// 
+        /// Method to sub to the pos topic
         /// </summary>
         public void SubscribeToPositionTopic()
         {
             _RabbitMqController.SubscribeToPositions(HandlePositionMessage);
         }
         /// <summary>
-        /// 
+        /// method to sub to the query topic
         /// </summary>
         public void SubscribeToQueryTopic()
         {
             _RabbitMqController.SubscribeToQuery(OpenQuery);
         }
         /// <summary>
-        /// 
+        /// Method to publish the query
         /// </summary>
-        /// <param name="personIdentifier"></param>
-        /// <param name="response"></param>
+        /// <param name="personIdentifier"> The user </param>
         public void SendQuery(string personIdentifier)
         {
             _RabbitMqController.PublishQuery(personIdentifier);
         }
+        /// <summary>
+        /// Method to feed new queries to be processed
+        /// </summary>
+        /// <param name="message"></param>
         public void OpenQuery(string message)
         {
             string response = ProcessQuery(message);
             QueryMessageReceived?.Invoke(response);
         }
         /// <summary>
-        /// 
+        /// Method to maange processed queries
         /// </summary>
         /// <param name="personIdentifier"></param>
         /// <returns></returns>
@@ -100,9 +108,9 @@ namespace PBT_205_A1
         }
 
         /// <summary>
-        /// 
+        /// Method that manages recieved positon messages
         /// </summary>
-        /// <param name="message"></param>
+        /// <param name="message"> the message </param>
         private void HandlePositionMessage(string message)
         {
             var parts = message.Split(',');
@@ -129,13 +137,13 @@ namespace PBT_205_A1
             if (_EnvironmentView.ContainsKey(username))
             {
                 var oldPosition = _EnvironmentView[username];
-                var oldTile = ContactTracingApp._Grid[oldPosition.X, oldPosition.Y];
+                var oldTile = _ContactTracingApp._Grid[oldPosition.X, oldPosition.Y];
                 oldTile.RemoveUser(username);
             }
 
             var newPosition = new PositionMarker(username, x, y);
             _EnvironmentView[username] = newPosition;
-            var newTile = ContactTracingApp._Grid[x, y];
+            var newTile = _ContactTracingApp._Grid[x, y];
             newTile.AddUser(username);
 
             if (newTile.UsersOnTile.Count > 1)
@@ -149,9 +157,9 @@ namespace PBT_205_A1
         }
 
         /// <summary>
-        /// 
+        /// Method to log contacting users
         /// </summary>
-        /// <param name="usersOnTile"></param>
+        /// <param name="usersOnTile"> list of strings (the users on a certain tile) </param>
         private void LogContact(List<string> usersOnTile)
         {
             foreach (var user in usersOnTile)
