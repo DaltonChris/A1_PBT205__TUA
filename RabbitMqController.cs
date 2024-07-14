@@ -55,10 +55,8 @@ namespace PBT_205_A1
                             exchange: _QueryExchange,
                             routingKey: _RoutingKey);
 
-            channel.ExchangeDeclare(exchange: ordersExchangeName, type: ExchangeType.Fanout); // Added for trading app
-            channel.ExchangeDeclare(exchange: tradesExchangeName, type: ExchangeType.Fanout); // Added for trading app
-            channel.ExchangeDeclare(exchange: queryResponseExchange, type: ExchangeType.Fanout); // Added for trading app
-
+            _Channel.ExchangeDeclare(exchange: ordersExchangeName, type: ExchangeType.Fanout); // Added for trading app
+            _Channel.ExchangeDeclare(exchange: tradesExchangeName, type: ExchangeType.Fanout); // Added for trading app
         }
 
         /// <summary>
