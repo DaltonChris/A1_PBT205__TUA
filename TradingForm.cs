@@ -51,15 +51,15 @@ namespace PBT_205_A1
             this.Text = "Trading Form";
             this.Size = new System.Drawing.Size(1000, 600);
 
-            // Username label and TextBox
+            // Username label and textbox
             Label lblUsername = new Label() { Text = "Username", Location = new System.Drawing.Point(20, 20) };
             txtUsername = new TextBox() { Location = new System.Drawing.Point(150, 20), Width = 200 };
 
-            // Stock selection label and ComboBox
+            // Stock selection label and combobox
             Label lblStocks = new Label() { Text = "Select Stock", Location = new System.Drawing.Point(20, 60) };
             cmbStocks = new ComboBox() { Location = new System.Drawing.Point(150, 60), Width = 200, DropDownStyle = ComboBoxStyle.DropDownList };
 
-            // Dictionary of stocks with prices (prices updated 14/07/24)
+            // Dictionary of stock prices
             stockPrices = new Dictionary<string, double>
             {
                 { "NVIDIA Corporation (NVDA)", 129.24 },
@@ -167,6 +167,7 @@ namespace PBT_205_A1
             this.Controls.Add(lvStockPrices);
         }
 
+
         // Method to load orders from file
         private List<Order> LoadOrders()
         {
@@ -232,7 +233,7 @@ namespace PBT_205_A1
         // Method to submit a new order
         private void SubmitOrder(string side, string price)
         {
-            // Check if the username textbox is empty or has whitespace
+            // Check if the username TextBox is empty or whitespace
             if (string.IsNullOrWhiteSpace(txtUsername.Text))
             {
                 // Show a message box if the username is not entered
@@ -259,7 +260,7 @@ namespace PBT_205_A1
             // Format the parsed price to two decimal places
             string formattedPrice = parsedPrice.ToString("F2");
 
-            // Get the selected stock from the combobox
+            // Get the selected stock from the ComboBox
             string stock = cmbStocks.SelectedItem.ToString();
 
             // Create a new order object with the provided details
@@ -272,27 +273,97 @@ namespace PBT_205_A1
                 Price = parsedPrice
             };
 
-            // Add the new order to the orders list
-            orders.Add(order);
+            // Try to find a matching order
+            bool isMatched = TryMatchOrder(order);
 
-            // Save the updated orders list to the file
-            SaveOrders();
-
-            // Add the order to the appropriate listbox based on the side (BUY or SELL)
-            if (side == "BUY")
+            if (!isMatched)
             {
-                lstBuyOrders.Items.Add(order);
-            }
-            else
-            {
-                lstSellOrders.Items.Add(order);
-            }
+                // Add the new order to the orders list if not matched
+                orders.Add(order);
+                SaveOrders();
 
-            // Show a message box confirming the order submission
-            MessageBox.Show($"{side} order for {stock} at ${formattedPrice} submitted.");
+                // Add the order to the appropriate ListBox based on the side (BUY or SELL)
+                if (side == "BUY")
+                {
+                    lstBuyOrders.Items.Add(order);
+                }
+                else
+                {
+                    lstSellOrders.Items.Add(order);
+                }
+
+                MessageBox.Show($"{side} order for {stock} at ${formattedPrice} submitted.");
+            }
         }
 
-        // Method to execute an order based on the side (BUY or SELL)
+        private bool TryMatchOrder(Order newOrder)
+        {
+            // Determine the opposite side
+            string oppositeSide = newOrder.Side == "BUY" ? "SELL" : "BUY";
+            ListBox oppositeListBox = newOrder.Side == "BUY" ? lstSellOrders : lstBuyOrders;
+
+            // Iterate through the opposite orders to find a match
+            foreach (Order existingOrder in oppositeListBox.Items)
+            {
+                if (existingOrder.Stock == newOrder.Stock && 
+                    ((newOrder.Side == "BUY" && newOrder.Price >= existingOrder.Price) ||
+                    (newOrder.Side == "SELL" && newOrder.Price <= existingOrder.Price)))
+                {
+                    // Execute the trade
+                    ExecuteTrade(newOrder, existingOrder);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void ExecuteTrade(Order newOrder, Order existingOrder)
+        {
+            // Remove the existing order from the orders list and the ListBox
+            orders.Remove(existingOrder);
+            SaveOrders();
+
+            ListBox oppositeListBox = newOrder.Side == "BUY" ? lstSellOrders : lstBuyOrders;
+            oppositeListBox.Items.Remove(existingOrder);
+
+            // Update user stocks
+            string buyer = newOrder.Side == "BUY" ? newOrder.Username : existingOrder.Username;
+            string seller = newOrder.Side == "SELL" ? newOrder.Username : existingOrder.Username;
+            string stock = newOrder.Stock;
+            int quantity = newOrder.Quantity;
+            double price = newOrder.Side == "BUY" ? existingOrder.Price : newOrder.Price;
+
+            // Update buyers stocks
+            if (!userStocks.ContainsKey(buyer))
+            {
+                userStocks[buyer] = new Dictionary<string, int>();
+            }
+            if (!userStocks[buyer].ContainsKey(stock))
+            {
+                userStocks[buyer][stock] = 0;
+            }
+            userStocks[buyer][stock] += quantity;
+
+            // Update sellers stocks
+            if (!userStocks.ContainsKey(seller))
+            {
+                userStocks[seller] = new Dictionary<string, int>();
+            }
+            if (!userStocks[seller].ContainsKey(stock))
+            {
+                userStocks[seller][stock] = 0;
+            }
+            userStocks[seller][stock] -= quantity;
+
+            // Show trade confirmation
+            MessageBox.Show($"{buyer} bought {quantity} of {stock} from {seller} at ${price}.");
+
+            // Publish trade to RabbitMQ
+            string trade = $"{buyer},{newOrder.Side},{stock},{quantity},${price},{seller}";
+            rabbitMqController.PublishTrade(trade);
+        }
+        
         private void ExecuteOrder(string side)
         {
             // Check if the username textbox is empty or whitespace
@@ -363,7 +434,7 @@ namespace PBT_205_A1
             string trade = $"{txtUsername.Text},{side},{stock},{quantity},${price},{otherUser}";
             rabbitMqController.PublishTrade(trade);
         }
-
+        
         // Method to clear all orders, mostly for testing
         private void ClearAllOrders()
         {
