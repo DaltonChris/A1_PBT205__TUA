@@ -117,37 +117,37 @@ namespace PBT_205_A1
         public void PublishOrder(string message)
         {
             var body = Encoding.UTF8.GetBytes(message);
-            channel.BasicPublish(exchange: ordersExchangeName, routingKey: "", basicProperties: null, body: body);
+            _Channel.BasicPublish(exchange: ordersExchangeName, routingKey: "", basicProperties: null, body: body);
         }
 
         public void SubscribeToOrders(Action<string> callback)
         {
-            var consumer = new EventingBasicConsumer(channel);
+            var consumer = new EventingBasicConsumer(_Channel);
             consumer.Received += (model, ea) =>
             {
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
                 callback(message);
             };
-            channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
+            _Channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
         }
 
         public void PublishTrade(string message)
         {
             var body = Encoding.UTF8.GetBytes(message);
-            channel.BasicPublish(exchange: tradesExchangeName, routingKey: "", basicProperties: null, body: body);
+            _Channel.BasicPublish(exchange: tradesExchangeName, routingKey: "", basicProperties: null, body: body);
         }
 
         public void SubscribeToTrades(Action<string> callback)
         {
-            var consumer = new EventingBasicConsumer(channel);
+            var consumer = new EventingBasicConsumer(_Channel);
             consumer.Received += (model, ea) =>
             {
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
                 callback(message);
             };
-            channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
+            _Channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
         }
 
         /// <summary>

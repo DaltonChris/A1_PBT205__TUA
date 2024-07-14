@@ -361,7 +361,7 @@ namespace PBT_205_A1
 
             // Publish trade to RabbitMQ
             string trade = $"{txtUsername.Text},{side},{stock},{quantity},${price},{otherUser}";
-            rabbitMqController.PublishQueryResponse(trade);
+            rabbitMqController.PublishTrade(trade);
         }
 
         // Method to clear all orders, mostly for testing
