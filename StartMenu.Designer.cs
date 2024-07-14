@@ -144,7 +144,8 @@ namespace PBT_205_A1
         /// <param name="e"></param>
         private void TradeAppBtnClick(object sender, EventArgs e)
         {
-            // grand exchange trade system or sumshit
+            var tradingForm = new TradingForm();
+            tradingForm.Show();
         }
 
         /// <summary>

@@ -17,6 +17,8 @@ namespace PBT_205_A1
         private readonly string queueName;
         private readonly string queryQueueName;
         private readonly string queryResponseExchange = "user.query.response";
+        private readonly string ordersExchangeName = "orders"; // Added for trading app
+        private readonly string tradesExchangeName = "trades"; // Added for trading app
 
         public RabbitMqController(string username, string password)
         {
@@ -36,6 +38,9 @@ namespace PBT_205_A1
                             exchange: exchangeName,
                             routingKey: _RoutingKey);
 
+            channel.ExchangeDeclare(exchange: ordersExchangeName, type: ExchangeType.Fanout); // Added for trading app
+            channel.ExchangeDeclare(exchange: tradesExchangeName, type: ExchangeType.Fanout); // Added for trading app
+            channel.ExchangeDeclare(exchange: queryResponseExchange, type: ExchangeType.Fanout); // Added for trading app
         }
 
         public void PublishPosition(string message)
@@ -72,6 +77,43 @@ namespace PBT_205_A1
                 callback(message);
             };
             channel.BasicConsume(queue: queryQueueName, autoAck: true, consumer: consumer);
+        }
+
+        // Trading app
+        public void PublishOrder(string message)
+        {
+            var body = Encoding.UTF8.GetBytes(message);
+            channel.BasicPublish(exchange: ordersExchangeName, routingKey: "", basicProperties: null, body: body);
+        }
+
+        public void SubscribeToOrders(Action<string> callback)
+        {
+            var consumer = new EventingBasicConsumer(channel);
+            consumer.Received += (model, ea) =>
+            {
+                var body = ea.Body.ToArray();
+                var message = Encoding.UTF8.GetString(body);
+                callback(message);
+            };
+            channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
+        }
+
+        public void PublishTrade(string message)
+        {
+            var body = Encoding.UTF8.GetBytes(message);
+            channel.BasicPublish(exchange: tradesExchangeName, routingKey: "", basicProperties: null, body: body);
+        }
+
+        public void SubscribeToTrades(Action<string> callback)
+        {
+            var consumer = new EventingBasicConsumer(channel);
+            consumer.Received += (model, ea) =>
+            {
+                var body = ea.Body.ToArray();
+                var message = Encoding.UTF8.GetString(body);
+                callback(message);
+            };
+            channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
         }
 
         public void Close()
