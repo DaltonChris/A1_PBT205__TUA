@@ -26,7 +26,7 @@ namespace PBT_205_A1
             base.Dispose(disposing);
             connection?.Close();
         }
-        private System.ComponentModel.IContainer components = null;
+        private System.ComponentModel.IContainer? components = null;
         #endregion
 
         IConnection? connection;
