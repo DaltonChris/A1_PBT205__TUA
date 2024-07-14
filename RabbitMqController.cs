@@ -18,17 +18,23 @@ namespace PBT_205_A1
         private readonly string _QueryQueueName;
         private readonly string _QueryExchange = "user_querys";
 
+        private readonly string queueName;
+        private readonly string ordersExchangeName = "orders"; // Added for trading app
+        private readonly string tradesExchangeName = "trades"; // Added for trading app
+
         public RabbitMqController(string username, string password) // Contructor
         {
             this._QueueName = $"Positions_Queue_{username}";
             this._QueryQueueName = $"Query_Queue_{username}";
-            var factory = new ConnectionFactory() { HostName = "localhost",
+            var factory = new ConnectionFactory()
+            {
+                HostName = "localhost",
             };
             _Connection = factory.CreateConnection();
             _Channel = _Connection.CreateModel();
 
             // Position exchange / Queue
-            _Channel.ExchangeDeclare(exchange: _ExchangeName, 
+            _Channel.ExchangeDeclare(exchange: _ExchangeName,
                                         type: ExchangeType.Topic);
             _Channel.QueueDeclare(queue: _QueueName, durable: false,
                                 exclusive: false,
@@ -48,6 +54,9 @@ namespace PBT_205_A1
             _Channel.QueueBind(queue: _QueryQueueName,
                             exchange: _QueryExchange,
                             routingKey: _RoutingKey);
+
+            _Channel.ExchangeDeclare(exchange: ordersExchangeName, type: ExchangeType.Fanout); // Added for trading app
+            _Channel.ExchangeDeclare(exchange: tradesExchangeName, type: ExchangeType.Fanout); // Added for trading app
         }
 
         /// <summary>
@@ -100,6 +109,43 @@ namespace PBT_205_A1
                 callback(message);
             };
             _Channel.BasicConsume(queue: _QueryQueueName, autoAck: true, consumer: consumer);
+        }
+
+        // Trading app
+        public void PublishOrder(string message)
+        {
+            var body = Encoding.UTF8.GetBytes(message);
+            _Channel.BasicPublish(exchange: ordersExchangeName, routingKey: "", basicProperties: null, body: body);
+        }
+
+        public void SubscribeToOrders(Action<string> callback)
+        {
+            var consumer = new EventingBasicConsumer(_Channel);
+            consumer.Received += (model, ea) =>
+            {
+                var body = ea.Body.ToArray();
+                var message = Encoding.UTF8.GetString(body);
+                callback(message);
+            };
+            _Channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
+        }
+
+        public void PublishTrade(string message)
+        {
+            var body = Encoding.UTF8.GetBytes(message);
+            _Channel.BasicPublish(exchange: tradesExchangeName, routingKey: "", basicProperties: null, body: body);
+        }
+
+        public void SubscribeToTrades(Action<string> callback)
+        {
+            var consumer = new EventingBasicConsumer(_Channel);
+            consumer.Received += (model, ea) =>
+            {
+                var body = ea.Body.ToArray();
+                var message = Encoding.UTF8.GetString(body);
+                callback(message);
+            };
+            _Channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
         }
 
         /// <summary>
