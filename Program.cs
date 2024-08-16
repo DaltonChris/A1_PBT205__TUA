@@ -16,9 +16,7 @@ namespace PBT_205_A1
             var chatLogin = new ChatLogin();
             if (chatLogin.ShowDialog() == DialogResult.OK)
             {
-                //ChatApp chatApp = new ChatApp(chatLogin.Username, chatLogin.Password);
-                //chatApp.ShowDialog();
-                ChatForm chatForm = new ChatForm();
+                ChatForm chatForm = new ChatForm(chatLogin.Username, chatLogin.Password);
                 chatForm.ShowDialog();
             }
         }

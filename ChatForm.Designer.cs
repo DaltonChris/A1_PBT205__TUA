@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ChatForm));
-            MessageTextBox = new TextBox();
+            messageTextBox = new TextBox();
             SendButton = new Button();
             LogoutButton = new Button();
             label1 = new Label();
@@ -39,18 +39,20 @@
             label3 = new Label();
             ChatListBox = new ListBox();
             UsersListBox = new ListBox();
+            folderBrowserDialog1 = new FolderBrowserDialog();
+            openFileDialog1 = new OpenFileDialog();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
-            // MessageTextBox
+            // messageTextBox
             // 
-            MessageTextBox.BackColor = SystemColors.Window;
-            MessageTextBox.Font = new Font("Consolas", 11F);
-            MessageTextBox.Location = new Point(6, 367);
-            MessageTextBox.MinimumSize = new Size(250, 50);
-            MessageTextBox.Name = "MessageTextBox";
-            MessageTextBox.Size = new Size(555, 50);
-            MessageTextBox.TabIndex = 1;
+            messageTextBox.BackColor = SystemColors.Window;
+            messageTextBox.Font = new Font("Consolas", 11F);
+            messageTextBox.Location = new Point(6, 367);
+            messageTextBox.MinimumSize = new Size(250, 50);
+            messageTextBox.Name = "messageTextBox";
+            messageTextBox.Size = new Size(555, 50);
+            messageTextBox.TabIndex = 1;
             // 
             // SendButton
             // 
@@ -78,7 +80,7 @@
             LogoutButton.FlatAppearance.MouseOverBackColor = Color.Gray;
             LogoutButton.FlatStyle = FlatStyle.Flat;
             LogoutButton.Font = new Font("Segoe UI", 8.907217F, FontStyle.Bold);
-            LogoutButton.Location = new Point(652, 319);
+            LogoutButton.Location = new Point(653, 319);
             LogoutButton.Name = "LogoutButton";
             LogoutButton.Size = new Size(118, 33);
             LogoutButton.TabIndex = 4;
@@ -172,6 +174,10 @@
             UsersListBox.Size = new Size(140, 326);
             UsersListBox.TabIndex = 11;
             // 
+            // openFileDialog1
+            // 
+            openFileDialog1.FileName = "openFileDialog";
+            // 
             // ChatForm
             // 
             AutoScaleDimensions = new SizeF(7F, 14F);
@@ -186,7 +192,7 @@
             Controls.Add(label1);
             Controls.Add(LogoutButton);
             Controls.Add(SendButton);
-            Controls.Add(MessageTextBox);
+            Controls.Add(messageTextBox);
             Controls.Add(UsersListBox);
             Font = new Font("Consolas", 8.907217F, FontStyle.Bold);
             ForeColor = SystemColors.ControlText;
@@ -203,7 +209,7 @@
         }
 
         #endregion
-        private TextBox MessageTextBox;
+        private TextBox messageTextBox;
         private Button SendButton;
         private Button LogoutButton;
         private Label label1;
@@ -213,5 +219,7 @@
         private Label label3;
         private ListBox ChatListBox;
         private ListBox UsersListBox;
+        private FolderBrowserDialog folderBrowserDialog1;
+        private OpenFileDialog openFileDialog1;
     }
 }
