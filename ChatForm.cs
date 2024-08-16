@@ -44,7 +44,6 @@ namespace PBT_205_A1
             StartChatroom();
 
             // Set the DrawMode of the ListBox
-            ChatListBox.DrawMode = DrawMode.OwnerDrawVariable;
             ChatListBox.DrawItem += ChatListBox_DrawItem;
             ChatListBox.MeasureItem += ChatListBox_MeasureItem;
         }
@@ -108,6 +107,7 @@ namespace PBT_205_A1
                     Invoke((Action)(() =>
                     {
                         ChatListBox.Items.Add(message);
+                        ChatListBox.TopIndex = ChatListBox.Items.Count - 1;
                     }));
                 };
                 _Channel.BasicConsume(queue: _QueueName, autoAck: true, consumer: consumer);
@@ -187,7 +187,7 @@ namespace PBT_205_A1
             else
             {
                 // Adjust the height for text msgs
-                e.ItemHeight = (int)e.Graphics.MeasureString(item, ChatListBox.Font, ChatListBox.Width).Height + 10; // Add padding
+                e.ItemHeight = (int)e.Graphics.MeasureString(item, ChatListBox.Font, ChatListBox.Width).Height + 5; // Add padding
             }
         }
 
@@ -213,6 +213,7 @@ namespace PBT_205_A1
                 _Channel.BasicPublish(exchange: _ExchangeName, routingKey: _RoutingKey, basicProperties: null, body: body);
                 messageTextBox.Clear();
                 //ChatListBox.Items.Add(fullMessage);
+                ChatListBox.TopIndex = ChatListBox.Items.Count - 1;
             }
         }
 

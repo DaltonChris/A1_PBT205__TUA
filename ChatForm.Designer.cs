@@ -51,20 +51,19 @@
             messageTextBox.Location = new Point(6, 367);
             messageTextBox.MinimumSize = new Size(250, 50);
             messageTextBox.Name = "messageTextBox";
-            messageTextBox.Size = new Size(555, 50);
+            messageTextBox.Size = new Size(554, 50);
             messageTextBox.TabIndex = 1;
-            messageTextBox.KeyDown += new KeyEventHandler(MessageTextBoxKeyDown);
+            messageTextBox.KeyDown += MessageTextBoxKeyDown;
             // 
             // SendButton
             // 
-            SendButton.BackColor = Color.WhiteSmoke;
+            SendButton.BackColor = Color.FromArgb(71, 145, 226);
             SendButton.FlatAppearance.BorderColor = Color.Black;
             SendButton.FlatAppearance.BorderSize = 2;
             SendButton.FlatAppearance.MouseDownBackColor = Color.White;
             SendButton.FlatAppearance.MouseOverBackColor = Color.Gray;
-            SendButton.FlatStyle = FlatStyle.Flat;
-            SendButton.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            SendButton.Location = new Point(567, 367);
+            SendButton.Font = new Font("Segoe UI", 14.1030931F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            SendButton.Location = new Point(566, 367);
             SendButton.Name = "SendButton";
             SendButton.Size = new Size(70, 50);
             SendButton.TabIndex = 2;
@@ -74,12 +73,11 @@
             // 
             // LogoutButton
             // 
-            LogoutButton.BackColor = Color.WhiteSmoke;
+            LogoutButton.BackColor = Color.FromArgb(71, 145, 226);
             LogoutButton.FlatAppearance.BorderColor = Color.Black;
             LogoutButton.FlatAppearance.BorderSize = 2;
             LogoutButton.FlatAppearance.MouseDownBackColor = Color.White;
             LogoutButton.FlatAppearance.MouseOverBackColor = Color.Gray;
-            LogoutButton.FlatStyle = FlatStyle.Flat;
             LogoutButton.Font = new Font("Segoe UI", 8.907217F, FontStyle.Bold);
             LogoutButton.Location = new Point(653, 319);
             LogoutButton.Name = "LogoutButton";
@@ -104,17 +102,17 @@
             // 
             // AttachButton
             // 
-            AttachButton.BackColor = Color.White;
+            AttachButton.BackColor = Color.FromArgb(71, 145, 226);
             AttachButton.BackgroundImageLayout = ImageLayout.None;
-            AttachButton.FlatAppearance.BorderColor = Color.Black;
-            AttachButton.FlatStyle = FlatStyle.Flat;
+            AttachButton.FlatAppearance.BorderColor = Color.DimGray;
             AttachButton.Font = new Font("Consolas", 14.1030931F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            AttachButton.Location = new Point(518, 377);
+            AttachButton.Image = (Image)resources.GetObject("AttachButton.Image");
+            AttachButton.Location = new Point(512, 373);
             AttachButton.Margin = new Padding(0);
             AttachButton.Name = "AttachButton";
-            AttachButton.Size = new Size(33, 33);
+            AttachButton.Padding = new Padding(1);
+            AttachButton.Size = new Size(40, 40);
             AttachButton.TabIndex = 6;
-            AttachButton.Text = "+";
             AttachButton.UseVisualStyleBackColor = false;
             AttachButton.Click += AttachButton_Click;
             // 
@@ -133,10 +131,11 @@
             // 
             // pictureBox1
             // 
-            pictureBox1.BackColor = Color.Transparent;
+            pictureBox1.BackColor = SystemColors.Window;
             pictureBox1.BackgroundImageLayout = ImageLayout.Center;
             pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
-            pictureBox1.Location = new Point(567, 292);
+            pictureBox1.Location = new Point(552, 283);
+            pictureBox1.Margin = new Padding(0);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(60, 60);
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
@@ -158,6 +157,7 @@
             // 
             // ChatListBox
             // 
+            ChatListBox.DrawMode = DrawMode.OwnerDrawVariable;
             ChatListBox.FormattingEnabled = true;
             ChatListBox.ItemHeight = 14;
             ChatListBox.Location = new Point(6, 7);
@@ -201,7 +201,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             MinimumSize = new Size(815, 438);
             Name = "ChatForm";
-            Opacity = 0.88D;
+            Opacity = 0.95D;
             RightToLeft = RightToLeft.No;
             Text = "Chat Now";
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
