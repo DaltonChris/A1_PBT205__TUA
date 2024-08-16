@@ -29,83 +29,62 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ChatForm));
-            textBox1 = new TextBox();
-            textBox2 = new TextBox();
-            button1 = new Button();
-            textBox3 = new TextBox();
-            button2 = new Button();
+            MessageTextBox = new TextBox();
+            SendButton = new Button();
+            LogoutButton = new Button();
             label1 = new Label();
-            button3 = new Button();
+            AttachButton = new Button();
             label2 = new Label();
             pictureBox1 = new PictureBox();
             label3 = new Label();
+            ChatListBox = new ListBox();
+            UsersListBox = new ListBox();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
-            // textBox1
+            // MessageTextBox
             // 
-            textBox1.BackColor = Color.Gainsboro;
-            textBox1.Font = new Font("Consolas", 11F);
-            textBox1.Location = new Point(6, 11);
-            textBox1.MinimumSize = new Size(250, 350);
-            textBox1.Name = "textBox1";
-            textBox1.ReadOnly = true;
-            textBox1.Size = new Size(631, 350);
-            textBox1.TabIndex = 0;
-            textBox1.TextChanged += textBox1_TextChanged_1;
+            MessageTextBox.BackColor = SystemColors.Window;
+            MessageTextBox.Font = new Font("Consolas", 11F);
+            MessageTextBox.Location = new Point(6, 367);
+            MessageTextBox.MinimumSize = new Size(250, 50);
+            MessageTextBox.Name = "MessageTextBox";
+            MessageTextBox.Size = new Size(555, 50);
+            MessageTextBox.TabIndex = 1;
             // 
-            // textBox2
+            // SendButton
             // 
-            textBox2.BackColor = Color.Gainsboro;
-            textBox2.Font = new Font("Consolas", 11F);
-            textBox2.Location = new Point(6, 367);
-            textBox2.MinimumSize = new Size(250, 50);
-            textBox2.Name = "textBox2";
-            textBox2.Size = new Size(555, 50);
-            textBox2.TabIndex = 1;
+            SendButton.BackColor = Color.WhiteSmoke;
+            SendButton.FlatAppearance.BorderColor = Color.Black;
+            SendButton.FlatAppearance.BorderSize = 2;
+            SendButton.FlatAppearance.MouseDownBackColor = Color.White;
+            SendButton.FlatAppearance.MouseOverBackColor = Color.Gray;
+            SendButton.FlatStyle = FlatStyle.Flat;
+            SendButton.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            SendButton.Location = new Point(567, 367);
+            SendButton.Name = "SendButton";
+            SendButton.Size = new Size(70, 50);
+            SendButton.TabIndex = 2;
+            SendButton.Text = "SEND";
+            SendButton.UseVisualStyleBackColor = false;
+            SendButton.Click += SendButton_Click;
             // 
-            // button1
+            // LogoutButton
             // 
-            button1.BackColor = Color.WhiteSmoke;
-            button1.FlatAppearance.BorderColor = Color.Black;
-            button1.FlatAppearance.BorderSize = 2;
-            button1.FlatAppearance.MouseDownBackColor = Color.White;
-            button1.FlatAppearance.MouseOverBackColor = Color.Gray;
-            button1.FlatStyle = FlatStyle.Flat;
-            button1.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            button1.Location = new Point(567, 367);
-            button1.Name = "button1";
-            button1.Size = new Size(70, 50);
-            button1.TabIndex = 2;
-            button1.Text = "SEND";
-            button1.UseVisualStyleBackColor = false;
-            // 
-            // textBox3
-            // 
-            textBox3.BackColor = Color.Gainsboro;
-            textBox3.Font = new Font("Consolas", 11F);
-            textBox3.Location = new Point(643, 41);
-            textBox3.MinimumSize = new Size(140, 320);
-            textBox3.Name = "textBox3";
-            textBox3.ReadOnly = true;
-            textBox3.Size = new Size(140, 320);
-            textBox3.TabIndex = 3;
-            // 
-            // button2
-            // 
-            button2.BackColor = Color.WhiteSmoke;
-            button2.FlatAppearance.BorderColor = Color.Black;
-            button2.FlatAppearance.BorderSize = 2;
-            button2.FlatAppearance.MouseDownBackColor = Color.White;
-            button2.FlatAppearance.MouseOverBackColor = Color.Gray;
-            button2.FlatStyle = FlatStyle.Flat;
-            button2.Font = new Font("Segoe UI", 8.907217F, FontStyle.Bold);
-            button2.Location = new Point(653, 319);
-            button2.Name = "button2";
-            button2.Size = new Size(118, 33);
-            button2.TabIndex = 4;
-            button2.Text = "LOGOUT";
-            button2.UseVisualStyleBackColor = false;
+            LogoutButton.BackColor = Color.WhiteSmoke;
+            LogoutButton.FlatAppearance.BorderColor = Color.Black;
+            LogoutButton.FlatAppearance.BorderSize = 2;
+            LogoutButton.FlatAppearance.MouseDownBackColor = Color.White;
+            LogoutButton.FlatAppearance.MouseOverBackColor = Color.Gray;
+            LogoutButton.FlatStyle = FlatStyle.Flat;
+            LogoutButton.Font = new Font("Segoe UI", 8.907217F, FontStyle.Bold);
+            LogoutButton.Location = new Point(652, 319);
+            LogoutButton.Name = "LogoutButton";
+            LogoutButton.Size = new Size(118, 33);
+            LogoutButton.TabIndex = 4;
+            LogoutButton.Text = "LOGOUT";
+            LogoutButton.UseVisualStyleBackColor = false;
+            LogoutButton.Click += LogoutButton_Click;
             // 
             // label1
             // 
@@ -119,30 +98,29 @@
             label1.TabIndex = 5;
             label1.Text = "TUA - 2024";
             label1.TextAlign = ContentAlignment.MiddleCenter;
-            label1.Click += label1_Click;
             // 
-            // button3
+            // AttachButton
             // 
-            button3.BackColor = Color.Transparent;
-            button3.BackgroundImageLayout = ImageLayout.None;
-            button3.FlatAppearance.BorderColor = Color.Black;
-            button3.FlatStyle = FlatStyle.Flat;
-            button3.Font = new Font("Consolas", 14.1030931F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button3.Location = new Point(519, 377);
-            button3.Margin = new Padding(0);
-            button3.Name = "button3";
-            button3.Size = new Size(32, 32);
-            button3.TabIndex = 6;
-            button3.Text = "+";
-            button3.UseVisualStyleBackColor = false;
-            button3.Click += button3_Click;
+            AttachButton.BackColor = Color.White;
+            AttachButton.BackgroundImageLayout = ImageLayout.None;
+            AttachButton.FlatAppearance.BorderColor = Color.Black;
+            AttachButton.FlatStyle = FlatStyle.Flat;
+            AttachButton.Font = new Font("Consolas", 14.1030931F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            AttachButton.Location = new Point(518, 377);
+            AttachButton.Margin = new Padding(0);
+            AttachButton.Name = "AttachButton";
+            AttachButton.Size = new Size(33, 33);
+            AttachButton.TabIndex = 6;
+            AttachButton.Text = "+";
+            AttachButton.UseVisualStyleBackColor = false;
+            AttachButton.Click += AttachButton_Click;
             // 
             // label2
             // 
             label2.AutoSize = true;
             label2.BackColor = Color.Silver;
             label2.Font = new Font("Consolas", 16.3298969F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label2.Location = new Point(643, 11);
+            label2.Location = new Point(643, 6);
             label2.MinimumSize = new Size(140, 0);
             label2.Name = "label2";
             label2.Size = new Size(140, 26);
@@ -161,7 +139,6 @@
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBox1.TabIndex = 8;
             pictureBox1.TabStop = false;
-            pictureBox1.Click += pictureBox1_Click;
             // 
             // label3
             // 
@@ -176,22 +153,41 @@
             label3.Text = "Chatting App";
             label3.TextAlign = ContentAlignment.MiddleCenter;
             // 
+            // ChatListBox
+            // 
+            ChatListBox.FormattingEnabled = true;
+            ChatListBox.ItemHeight = 14;
+            ChatListBox.Location = new Point(6, 7);
+            ChatListBox.Name = "ChatListBox";
+            ChatListBox.Size = new Size(631, 354);
+            ChatListBox.TabIndex = 10;
+            // 
+            // UsersListBox
+            // 
+            UsersListBox.BackColor = SystemColors.ScrollBar;
+            UsersListBox.FormattingEnabled = true;
+            UsersListBox.ItemHeight = 14;
+            UsersListBox.Location = new Point(643, 35);
+            UsersListBox.Name = "UsersListBox";
+            UsersListBox.Size = new Size(140, 326);
+            UsersListBox.TabIndex = 11;
+            // 
             // ChatForm
             // 
             AutoScaleDimensions = new SizeF(7F, 14F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.DimGray;
             ClientSize = new Size(795, 427);
-            Controls.Add(label3);
             Controls.Add(pictureBox1);
+            Controls.Add(ChatListBox);
+            Controls.Add(label3);
             Controls.Add(label2);
-            Controls.Add(button3);
+            Controls.Add(AttachButton);
             Controls.Add(label1);
-            Controls.Add(button2);
-            Controls.Add(textBox3);
-            Controls.Add(button1);
-            Controls.Add(textBox2);
-            Controls.Add(textBox1);
+            Controls.Add(LogoutButton);
+            Controls.Add(SendButton);
+            Controls.Add(MessageTextBox);
+            Controls.Add(UsersListBox);
             Font = new Font("Consolas", 8.907217F, FontStyle.Bold);
             ForeColor = SystemColors.ControlText;
             FormBorderStyle = FormBorderStyle.Fixed3D;
@@ -207,16 +203,15 @@
         }
 
         #endregion
-
-        private TextBox textBox1;
-        private TextBox textBox2;
-        private Button button1;
-        private TextBox textBox3;
-        private Button button2;
+        private TextBox MessageTextBox;
+        private Button SendButton;
+        private Button LogoutButton;
         private Label label1;
-        private Button button3;
+        private Button AttachButton;
         private Label label2;
         private PictureBox pictureBox1;
         private Label label3;
+        private ListBox ChatListBox;
+        private ListBox UsersListBox;
     }
 }
