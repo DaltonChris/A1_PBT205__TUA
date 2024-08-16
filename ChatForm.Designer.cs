@@ -53,6 +53,7 @@
             messageTextBox.Name = "messageTextBox";
             messageTextBox.Size = new Size(555, 50);
             messageTextBox.TabIndex = 1;
+            messageTextBox.KeyDown += new KeyEventHandler(MessageTextBoxKeyDown);
             // 
             // SendButton
             // 

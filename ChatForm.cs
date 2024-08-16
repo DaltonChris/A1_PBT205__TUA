@@ -117,6 +117,8 @@ namespace PBT_205_A1
                 MessageBox.Show($"Error starting chat-room: {ex.Message}");
             }
         }
+
+
         // Handle custom drawing of items in the ListBox
         private void ChatListBox_DrawItem(object sender, DrawItemEventArgs e)
         {
@@ -168,29 +170,32 @@ namespace PBT_205_A1
 
 
 
-        /// <summary>
-        /// Mesaure height of img items
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void ChatListBox_MeasureItem(object sender, MeasureItemEventArgs e)
         {
             if (e.Index < 0) return;
 
-            // Get the item
             var item = ChatListBox.Items[e.Index].ToString();
 
-            if (item.StartsWith("IMG:"))
+            if (item.Contains("IMG:"))
             {
-                e.ItemHeight = 75;
-                e.ItemWidth = 75;
+                // Get height based on image size and username text
+                int textHeight = (int)e.Graphics.MeasureString(_Username, ChatListBox.Font, ChatListBox.Width).Height;
+                int imageHeight = 100; // Fixed image height
+
+                e.ItemHeight = textHeight + imageHeight + 10; // Add some padding
             }
             else
             {
-                // Adjust the height for text items
-                e.ItemHeight = (int)e.Graphics.MeasureString(item, ChatListBox.Font, ChatListBox.Width).Height;
+                // Adjust the height for text msgs
+                e.ItemHeight = (int)e.Graphics.MeasureString(item, ChatListBox.Font, ChatListBox.Width).Height + 10; // Add padding
             }
         }
+
+        /// <summary>
+        /// Send Msg click button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SendButton_Click(object sender, EventArgs e)
         {
             if (_Channel == null)
@@ -225,6 +230,11 @@ namespace PBT_205_A1
             UsersListBox.Text += "--------\nOffline:\n"; // Offline header
         }
 
+        /// <summary>
+        /// Method for users to attach images to be sent
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void AttachButton_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -237,29 +247,33 @@ namespace PBT_205_A1
                     // Get the file's path
                     string filePath = openFileDialog.FileName;
 
-                    // Convert image to a byte array
+                    // Convert img to a byte array
                     byte[] imageBytes = System.IO.File.ReadAllBytes(filePath);
                     string base64String = Convert.ToBase64String(imageBytes); // byte array to Base64 string
 
-                    // msg with the username and image
-                    string message = $"{_Username}: IMG:{base64String}";
-
+                    string message = $"{_Username}: IMG:{base64String}"; // msg with the username and image
                     // Send encoded img as a message
                     var body = Encoding.UTF8.GetBytes(message);
                     _Channel.BasicPublish(exchange: _ExchangeName, routingKey: _RoutingKey, basicProperties: null, body: body);
 
-                    MessageBox.Show("Image sent successfully!");
+                    //MessageBox.Show("Image sent successfully!");
                 }
             }
         }
 
-
-        private void LogoutButton_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Enter-Key Down event for the messageTextBox.
+        /// </summary>
+        private void MessageTextBoxKeyDown(object? sender, KeyEventArgs e)
         {
-
+            if (e.KeyCode == Keys.Enter) // if enter is pressed
+            {
+                SendButton_Click(this,e); // send msg
+                e.SuppressKeyPress = true; // Stop annoying ding sound
+            }
         }
 
-        private void folderBrowserDialog1_HelpRequest(object sender, EventArgs e)
+        private void LogoutButton_Click(object sender, EventArgs e)
         {
 
         }
