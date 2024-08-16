@@ -28,28 +28,44 @@ namespace PBT_205_A1
             usernameTextBox = new TextBox();
             passwordTextBox = new TextBox();
             loginButton = new Button();
-
-            ClientSize = new Size(300, 200);
-            Text = "Login";
-
-            // Username
-            usernameTextBox.Location = new Point(50, 50);
-            usernameTextBox.Size = new Size(200, 30);
+            SuspendLayout();
+            // 
+            // usernameTextBox
+            // 
+            usernameTextBox.Location = new Point(12, 38);
+            usernameTextBox.Name = "usernameTextBox";
             usernameTextBox.PlaceholderText = "Username";
-            Controls.Add(usernameTextBox);
-
-            // Password
-            passwordTextBox.Location = new Point(50, 100);
-            passwordTextBox.Size = new Size(200, 30);
-            passwordTextBox.UseSystemPasswordChar = true;
+            usernameTextBox.Size = new Size(200, 23);
+            usernameTextBox.TabIndex = 0;
+            // 
+            // passwordTextBox
+            // 
+            passwordTextBox.Location = new Point(12, 77);
+            passwordTextBox.Name = "passwordTextBox";
             passwordTextBox.PlaceholderText = "Password";
-            Controls.Add(passwordTextBox);
-
-            // Button
+            passwordTextBox.Size = new Size(200, 23);
+            passwordTextBox.TabIndex = 1;
+            passwordTextBox.UseSystemPasswordChar = true;
+            // 
+            // loginButton
+            // 
+            loginButton.Location = new Point(12, 116);
+            loginButton.Name = "loginButton";
+            loginButton.Size = new Size(75, 27);
+            loginButton.TabIndex = 2;
             loginButton.Text = "Login";
-            loginButton.Location = new Point(100, 150);
-            loginButton.Click += new EventHandler(LoginButtonClick);
+            loginButton.Click += LoginButtonClick;
+            // 
+            // ChatLogin
+            // 
+            ClientSize = new Size(226, 156);
+            Controls.Add(usernameTextBox);
+            Controls.Add(passwordTextBox);
             Controls.Add(loginButton);
+            Name = "ChatLogin";
+            Text = "Login";
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         private void LoginButtonClick(object sender, EventArgs e)
