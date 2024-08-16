@@ -46,6 +46,9 @@ namespace PBT_205_A1
             // Set the DrawMode of the ListBox
             ChatListBox.DrawItem += ChatListBox_DrawItem;
             ChatListBox.MeasureItem += ChatListBox_MeasureItem;
+
+            NotifyUserJoined();
+
         }
 
         /// <summary>
@@ -106,6 +109,17 @@ namespace PBT_205_A1
                     var message = Encoding.UTF8.GetString(body);
                     Invoke((Action)(() =>
                     {
+                        // Check for join notification
+                        if (message.Contains("has joined the chat."))
+                        {
+                            string username = message.Split(' ')[0];
+                            if (!UsersListBox.Items.Contains(username))
+                            {
+                                UsersListBox.Items.Add(username);
+                            }
+                        }
+
+
                         ChatListBox.Items.Add(message);
                         ChatListBox.TopIndex = ChatListBox.Items.Count - 1;
                     }));
@@ -143,20 +157,20 @@ namespace PBT_205_A1
 
                     // Calculate the aspect ratio
                     float aspectRatio = (float)image.Width / image.Height;
-                    int newWidth = 100;
-                    int newHeight = 100;
+                    int newWidth = 125;
+                    int newHeight = 125;
 
                     // Scale down keeping aspect ratio
                     if (aspectRatio > 1){
-                        newHeight = (int)(100 / aspectRatio);
+                        newHeight = (int)(125 / aspectRatio);
                     }
                     else{
-                        newWidth = (int)(100 * aspectRatio);
+                        newWidth = (int)(125 * aspectRatio);
                     }
 
                     // Position the image within the bounds
-                    int x = e.Bounds.X + (100 - newWidth) / 2;
-                    int y = e.Bounds.Y + (100 - newHeight) / 2 + 20;
+                    int x = e.Bounds.X + (125 - newWidth) / 2 + 75; // Add offset 
+                    int y = e.Bounds.Y + (125 - newHeight) / 2 + 3; // add padding
 
                     e.Graphics.DrawImage(image, x, y, newWidth, newHeight);
                 }
@@ -182,12 +196,12 @@ namespace PBT_205_A1
                 int textHeight = (int)e.Graphics.MeasureString(_Username, ChatListBox.Font, ChatListBox.Width).Height;
                 int imageHeight = 100; // Fixed image height
 
-                e.ItemHeight = textHeight + imageHeight + 10; // Add some padding
+                e.ItemHeight = textHeight + imageHeight + 1; // Add some padding
             }
             else
             {
                 // Adjust the height for text msgs
-                e.ItemHeight = (int)e.Graphics.MeasureString(item, ChatListBox.Font, ChatListBox.Width).Height + 5; // Add padding
+                e.ItemHeight = (int)e.Graphics.MeasureString(item, ChatListBox.Font, ChatListBox.Width).Height + 1; // Add padding
             }
         }
 
@@ -229,6 +243,14 @@ namespace PBT_205_A1
                 UsersListBox.Text += $"{user}\n"; // Add to list
             }
             UsersListBox.Text += "--------\nOffline:\n"; // Offline header
+        }
+        private void NotifyUserJoined()
+        {
+            if (_Channel == null) return;
+
+            string joinMessage = $"{_Username} has joined the chat.";
+            var body = Encoding.UTF8.GetBytes(joinMessage);
+            _Channel.BasicPublish(exchange: _ExchangeName, routingKey: _RoutingKey, basicProperties: null, body: body);
         }
 
         /// <summary>

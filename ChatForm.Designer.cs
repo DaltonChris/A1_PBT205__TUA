@@ -121,10 +121,11 @@
             label2.AutoSize = true;
             label2.BackColor = Color.Silver;
             label2.Font = new Font("Consolas", 16.3298969F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label2.Location = new Point(643, 6);
+            label2.Location = new Point(643, 7);
             label2.MinimumSize = new Size(140, 0);
             label2.Name = "label2";
-            label2.Size = new Size(140, 26);
+            label2.Padding = new Padding(4);
+            label2.Size = new Size(140, 34);
             label2.TabIndex = 7;
             label2.Text = "User List";
             label2.TextAlign = ContentAlignment.MiddleCenter;
@@ -158,6 +159,7 @@
             // ChatListBox
             // 
             ChatListBox.DrawMode = DrawMode.OwnerDrawVariable;
+            ChatListBox.Font = new Font("Consolas", 11.1340208F, FontStyle.Bold, GraphicsUnit.Point, 0);
             ChatListBox.FormattingEnabled = true;
             ChatListBox.ItemHeight = 14;
             ChatListBox.Location = new Point(6, 7);
@@ -168,11 +170,13 @@
             // UsersListBox
             // 
             UsersListBox.BackColor = SystemColors.ScrollBar;
+            UsersListBox.Font = new Font("Consolas", 16.3298969F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            UsersListBox.ForeColor = Color.Chartreuse;
             UsersListBox.FormattingEnabled = true;
-            UsersListBox.ItemHeight = 14;
-            UsersListBox.Location = new Point(643, 35);
+            UsersListBox.ItemHeight = 26;
+            UsersListBox.Location = new Point(643, 45);
             UsersListBox.Name = "UsersListBox";
-            UsersListBox.Size = new Size(140, 326);
+            UsersListBox.Size = new Size(140, 316);
             UsersListBox.TabIndex = 11;
             // 
             // openFileDialog1
