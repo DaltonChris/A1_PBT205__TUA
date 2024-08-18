@@ -67,18 +67,16 @@ namespace PBT_205_A1
 
                 _Connection = factory.CreateConnection();
                 _Channel = _Connection.CreateModel();
-
-                // Declare an exchange of type 'topic'
                 _Channel.ExchangeDeclare(exchange: _ExchangeName, type: ExchangeType.Topic);
 
-                // Declare a unique queue for each client
+                // Unique queue for each client
                 _Channel.QueueDeclare(queue: _QueueName,
                                      durable: false,
                                      exclusive: false,
                                      autoDelete: true,  // Auto-delete the queue when user exits
                                      arguments: null);
 
-                // Bind the queue to the Rabbits exchange using chatroom routing key
+                // Bind queue to the Rabbits exchange using chatroom routing key
                 _Channel.QueueBind(queue: _QueueName,
                                   exchange: _ExchangeName,
                                   routingKey: _RoutingKey);
