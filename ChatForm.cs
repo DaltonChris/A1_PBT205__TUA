@@ -46,6 +46,8 @@ namespace PBT_205_A1
             // Set the DrawMode of the ListBox
             ChatListBox.DrawItem += ChatListBox_DrawItem;
             ChatListBox.MeasureItem += ChatListBox_MeasureItem;
+            // Subscribe to the MouseClick event
+            ChatListBox.MouseClick += ChatListBox_MouseClick;
 
             NotifyUserJoined();
 
@@ -182,6 +184,51 @@ namespace PBT_205_A1
         }
 
         /// <summary>
+        /// A Method to manage clicked chat items (To view images at full size)
+        /// , the method checks if the item is an image, if so simple popup form
+        /// is made sligtly larger than the img and the image is displayed at a full scale.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ChatListBox_MouseClick(object sender, MouseEventArgs e)
+        {
+            int index = ChatListBox.IndexFromPoint(e.Location); // Get clicked item index
+            if (index != ListBox.NoMatches)
+            {
+                var item = ChatListBox.Items[index].ToString();
+                int imgIndex = item.IndexOf("IMG:");
+
+                if (imgIndex != -1) // if the clicked item contains an image
+                {
+                    string base64String = item.Substring(imgIndex + 4); // Skip "IMG:"
+                    // Get the img's bytes
+                    byte[] imageBytes = Convert.FromBase64String(base64String);
+                    // Convert the img
+                    using MemoryStream ms = new MemoryStream(imageBytes);
+                    Image image = Image.FromStream(ms);
+
+                    // build a new form to display the image
+                    Form imageForm = new Form
+                    {
+                        Width = image.Width + 20, // Image width + padding
+                        Height = image.Height + 40, // Img Height  + padding
+                        Text = "Image Viewer" // Title for form
+                    };
+                    // Pic box for viewing the image full sized
+                    PictureBox pictureBox = new PictureBox
+                    {
+                        Image = image,
+                        SizeMode = PictureBoxSizeMode.Zoom,
+                        Dock = DockStyle.Fill
+                    };
+
+                    imageForm.Controls.Add(pictureBox); // Add the pic to the form
+                    imageForm.ShowDialog(); // Show the img Form
+                }
+            }
+        }
+
+        /// <summary>
         /// Method to work out the sizing of each item for the chat list box, This is so when a user sends a image
         /// It can be properly formatted to fit within the other msgs, or imgs.
         /// </summary>
@@ -238,19 +285,6 @@ namespace PBT_205_A1
             }
         }
 
-
-        /// <summary>
-        /// Updates the users list in the usersTextBox.
-        /// </summary>
-        public void UpdateUsersList(string[] users)
-        {
-            UsersListBox.Text = "Online:\n";// Online header
-            foreach (var user in users) // For each user online
-            {
-                UsersListBox.Text += $"{user}\n"; // Add to list
-            }
-            UsersListBox.Text += "--------\nOffline:\n"; // Offline header
-        }
         private void NotifyUserJoined()
         {
             if (_Channel == null) return;
