@@ -169,7 +169,7 @@ namespace PBT_205_A1
 
                     // Position the image within the bounds
                     int x = e.Bounds.X + (125 - newWidth) / 2 + 75; // Add offset 
-                    int y = e.Bounds.Y + (125 - newHeight) / 2 + 3; // add padding
+                    int y = e.Bounds.Y + (125 - newHeight) / 2; // add padding
 
                     e.Graphics.DrawImage(image, x, y, newWidth, newHeight);
                 }
@@ -196,7 +196,8 @@ namespace PBT_205_A1
             if (item.Contains("IMG:"))
             {
                 // Get height based on image size and username text
-                int textHeight = (int)e.Graphics.MeasureString(_Username, ChatListBox.Font, ChatListBox.Width).Height;
+                int textHeight = (int)e.Graphics.MeasureString(_Username, 
+                                        ChatListBox.Font, ChatListBox.Width).Height;
                 int imageHeight = 100; // Fixed image height
 
                 e.ItemHeight = textHeight + imageHeight + 1; // Add some padding
@@ -204,7 +205,8 @@ namespace PBT_205_A1
             else
             {
                 // Adjust the height for text msgs
-                e.ItemHeight = (int)e.Graphics.MeasureString(item, ChatListBox.Font, ChatListBox.Width).Height + 1; // Add padding
+                e.ItemHeight = (int)e.Graphics.MeasureString(item, 
+                    ChatListBox.Font, ChatListBox.Width).Height + 1; // Add padding
             }
         }
 
@@ -227,9 +229,11 @@ namespace PBT_205_A1
                 string message = messageTextBox.Text;
                 string fullMessage = $"{_Username}: {message}";
                 var body = Encoding.UTF8.GetBytes(fullMessage);
-                _Channel.BasicPublish(exchange: _ExchangeName, routingKey: _RoutingKey, basicProperties: null, body: body);
+                _Channel.BasicPublish(exchange: _ExchangeName, 
+                                    routingKey: _RoutingKey, 
+                                    basicProperties: null, 
+                                    body: body);
                 messageTextBox.Clear();
-                //ChatListBox.Items.Add(fullMessage);
                 ChatListBox.TopIndex = ChatListBox.Items.Count - 1;
             }
         }
@@ -253,7 +257,10 @@ namespace PBT_205_A1
 
             string joinMessage = $"{_Username} has joined the chat.";
             var body = Encoding.UTF8.GetBytes(joinMessage);
-            _Channel.BasicPublish(exchange: _ExchangeName, routingKey: _RoutingKey, basicProperties: null, body: body);
+            _Channel.BasicPublish(exchange: _ExchangeName, 
+                                routingKey: _RoutingKey, 
+                                basicProperties: null, 
+                                body: body);
         }
 
         /// <summary>
@@ -263,27 +270,29 @@ namespace PBT_205_A1
         /// <param name="e"></param>
         private void AttachButton_Click(object sender, EventArgs e)
         {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            using OpenFileDialog openFileDialog = new OpenFileDialog();
+
+            // Filter valid image types for attachments
+            openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp";
+            openFileDialog.Title = "Select an Image"; // Dialog box title
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp";
-                openFileDialog.Title = "Select an Image";
+                string filePath = openFileDialog.FileName;// Get the file's path
 
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    // Get the file's path
-                    string filePath = openFileDialog.FileName;
+                // Convert img to a byte array
+                byte[] imageBytes = File.ReadAllBytes(filePath);
+                string base64String = Convert.ToBase64String(imageBytes); // byte array to Base64 string
 
-                    // Convert img to a byte array
-                    byte[] imageBytes = System.IO.File.ReadAllBytes(filePath);
-                    string base64String = Convert.ToBase64String(imageBytes); // byte array to Base64 string
+                string message = $"{_Username}: IMG:{base64String}"; // msg with the username and image
+                                                                     // Send encoded img as a message
+                var body = Encoding.UTF8.GetBytes(message);
+                _Channel.BasicPublish(exchange: _ExchangeName, 
+                                    routingKey: _RoutingKey, 
+                                    basicProperties: null, 
+                                    body: body);
 
-                    string message = $"{_Username}: IMG:{base64String}"; // msg with the username and image
-                    // Send encoded img as a message
-                    var body = Encoding.UTF8.GetBytes(message);
-                    _Channel.BasicPublish(exchange: _ExchangeName, routingKey: _RoutingKey, basicProperties: null, body: body);
-
-                    //MessageBox.Show("Image sent successfully!");
-                }
+                //MessageBox.Show("Image sent successfully!"); // For Testing
             }
         }
 
@@ -301,7 +310,30 @@ namespace PBT_205_A1
 
         private void LogoutButton_Click(object sender, EventArgs e)
         {
-
+            // Add a msg for others that the user has left
+            if (_Channel != null)
+            {
+                string leaveMessage = $"{_Username} has left the chat.";
+                var body = Encoding.UTF8.GetBytes(leaveMessage);
+                _Channel.BasicPublish(exchange: _ExchangeName, 
+                                    routingKey: _RoutingKey, 
+                                    basicProperties: null, 
+                                    body: body);
+            }
+            if (_Channel != null) // Close the Channel
+            {
+                _Channel.Close();
+                _Channel.Dispose();
+                _Channel = null;
+            }
+            if (_Connection != null) // Close the connection
+            {
+                _Connection.Close();
+                _Connection.Dispose();
+                _Connection = null;
+            }
+            this.Close(); // Close the chat form
+            Application.Exit(); // Close tha app
         }
     }
 }
