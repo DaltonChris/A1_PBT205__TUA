@@ -33,24 +33,26 @@ namespace PBT_205_A1
         string _Username;
         string _Password;
 
-
+        /// <summary>
+        /// Constructor for a new ChatForm
+        /// </summary>
+        /// <param name="username"> Username for client </param>
+        /// <param name="password"> Password for user </param>
         public ChatForm(string username, string password)
         {
-            this._Username = username;
-            this._Password = password;
+            this._Username = username; // username
+            this._Password = password; // password
             this._QueueName = "chat_queue_" + username; // Unique queue for each user
-            InitializeComponent();
-            InitRabbitMQ();
-            StartChatroom();
+            InitializeComponent(); // init the form
+            InitRabbitMQ(); // init the rabbitMQ connection
+            StartChatroom(); // Start recieving chats from rabbitMQ
 
-            // Set the DrawMode of the ListBox
+            // Subscribe to Click events
             ChatListBox.DrawItem += ChatListBox_DrawItem;
             ChatListBox.MeasureItem += ChatListBox_MeasureItem;
-            // Subscribe to the MouseClick event
             ChatListBox.MouseClick += ChatListBox_MouseClick;
 
-            NotifyUserJoined();
-
+            NotifyUserJoined(); // Let users know new user has joined chat
         }
 
         /// <summary>
@@ -94,10 +96,8 @@ namespace PBT_205_A1
         /// </summary>
         private void StartChatroom()
         {
-            try
-            {
-                if (_Channel == null)
-                {
+            try{ // Attempt to Start the ChatRoom
+                if (_Channel == null){ // If channel is null rabbitMq is not setup
                     MessageBox.Show("RabbitMQ channel is not initialized.");
                     return;
                 }
@@ -127,14 +127,17 @@ namespace PBT_205_A1
                 };
                 _Channel.BasicConsume(queue: _QueueName, autoAck: true, consumer: consumer);
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error starting chat-room: {ex.Message}");
+            catch{ // Couldn't Start the chat room
+                MessageBox.Show($"Error starting chat-room :(");
             }
         }
 
 
-        // Handle custom drawing of items in the ListBox
+        /// <summary>
+        /// A method that Handles custom drawing of items in the ListBox
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ChatListBox_DrawItem(object sender, DrawItemEventArgs e)
         {
             if (e.Index < 0) return;
@@ -151,30 +154,26 @@ namespace PBT_205_A1
 
                 // Draw the image
                 string base64String = item.Substring(imgIndex + 4); // Skip "IMG:"
-                byte[] imageBytes = Convert.FromBase64String(base64String);
-                using (MemoryStream ms = new MemoryStream(imageBytes))
+                byte[] imageBytes = Convert.FromBase64String(base64String); // convert the base64 to bytes
+                using MemoryStream ms = new MemoryStream(imageBytes); // memsstream for the bytes
+                Image image = Image.FromStream(ms); // get img from the stream
+
+                // Calculate the aspect ratio
+                float aspectRatio = (float)image.Width / image.Height;
+                int newWidth = 125;
+                int newHeight = 125;
+
+                // Scale down keeping aspect ratio
+                if (aspectRatio > 1)
                 {
-                    Image image = Image.FromStream(ms);
-
-                    // Calculate the aspect ratio
-                    float aspectRatio = (float)image.Width / image.Height;
-                    int newWidth = 125;
-                    int newHeight = 125;
-
-                    // Scale down keeping aspect ratio
-                    if (aspectRatio > 1){
-                        newHeight = (int)(125 / aspectRatio);
-                    }
-                    else{
-                        newWidth = (int)(125 * aspectRatio);
-                    }
-
-                    // Position the image within the bounds
-                    int x = e.Bounds.X + (125 - newWidth) / 2 + 75; // Add offset 
-                    int y = e.Bounds.Y + (125 - newHeight) / 2; // add padding
-
-                    e.Graphics.DrawImage(image, x, y, newWidth, newHeight);
+                    newHeight = (int)(125 / aspectRatio);
                 }
+                else { newWidth = (int)(125 * aspectRatio); }
+                // Position the image within the bounds
+                int x = e.Bounds.X + (125 - newWidth) / 2 + 75; // Add offset 
+                int y = e.Bounds.Y + (125 - newHeight) / 2; // add padding
+
+                e.Graphics.DrawImage(image, x, y, newWidth, newHeight);
             }
             else
             {
@@ -193,19 +192,17 @@ namespace PBT_205_A1
         private void ChatListBox_MouseClick(object sender, MouseEventArgs e)
         {
             int index = ChatListBox.IndexFromPoint(e.Location); // Get clicked item index
-            if (index != ListBox.NoMatches)
+            if (index != ListBox.NoMatches) // If the item was in the listbox
             {
                 var item = ChatListBox.Items[index].ToString();
                 int imgIndex = item.IndexOf("IMG:");
 
                 if (imgIndex != -1) // if the clicked item contains an image
                 {
-                    string base64String = item.Substring(imgIndex + 4); // Skip "IMG:"
-                    // Get the img's bytes
-                    byte[] imageBytes = Convert.FromBase64String(base64String);
-                    // Convert the img
-                    using MemoryStream ms = new MemoryStream(imageBytes);
-                    Image image = Image.FromStream(ms);
+                    string base64String = item.Substring(imgIndex + 4); // Skip "IMG:"                    
+                    byte[] imageBytes = Convert.FromBase64String(base64String);// Get the img's bytes
+                    using MemoryStream ms = new MemoryStream(imageBytes); // get steam from bytes
+                    Image image = Image.FromStream(ms); // Convert the img
 
                     // build a new form to display the image
                     Form imageForm = new Form
@@ -264,37 +261,41 @@ namespace PBT_205_A1
         /// <param name="e"></param>
         private void SendButton_Click(object sender, EventArgs e)
         {
-            if (_Channel == null)
+            if (_Channel == null) // If channel is null
             {
                 MessageBox.Show("Channel is not initialized.");
-                return;
+                return; // Let the user know and return
             }
 
             // Ensure the messageTextBox has text
             if (!string.IsNullOrWhiteSpace(messageTextBox.Text))
             {
-                string message = messageTextBox.Text;
-                string fullMessage = $"{_Username}: {message}";
-                var body = Encoding.UTF8.GetBytes(fullMessage);
+                string message = messageTextBox.Text; // Get the msg string
+                string fullMessage = $"{_Username}: {message}"; // add username to the msg
+                var body = Encoding.UTF8.GetBytes(fullMessage); // Encode msg
+
                 _Channel.BasicPublish(exchange: _ExchangeName, 
                                     routingKey: _RoutingKey, 
                                     basicProperties: null, 
-                                    body: body);
-                messageTextBox.Clear();
-                ChatListBox.TopIndex = ChatListBox.Items.Count - 1;
+                                    body: body); // Send the msg to rabbit
+                messageTextBox.Clear(); // Clear the msg textbox
+                ChatListBox.TopIndex = ChatListBox.Items.Count - 1; // Update the items index
             }
         }
 
+        /// <summary>
+        /// A Method to send a msg notifying others of a new user joining the chat
+        /// </summary>
         private void NotifyUserJoined()
         {
-            if (_Channel == null) return;
+            if (_Channel == null) return; // Dont attempt to notify
 
-            string joinMessage = $"{_Username} has joined the chat.";
-            var body = Encoding.UTF8.GetBytes(joinMessage);
+            string joinMessage = $"{_Username} has joined the chat."; // Create a join msg
+            var body = Encoding.UTF8.GetBytes(joinMessage); // Encode msg
             _Channel.BasicPublish(exchange: _ExchangeName, 
                                 routingKey: _RoutingKey, 
                                 basicProperties: null, 
-                                body: body);
+                                body: body); // Publish msg to rabbitmq 
         }
 
         /// <summary>
@@ -304,6 +305,7 @@ namespace PBT_205_A1
         /// <param name="e"></param>
         private void AttachButton_Click(object sender, EventArgs e)
         {
+            // Create a OpenFile instance so the user can select the attachment
             using OpenFileDialog openFileDialog = new OpenFileDialog();
 
             // Filter valid image types for attachments
@@ -319,14 +321,12 @@ namespace PBT_205_A1
                 string base64String = Convert.ToBase64String(imageBytes); // byte array to Base64 string
 
                 string message = $"{_Username}: IMG:{base64String}"; // msg with the username and image
-                                                                     // Send encoded img as a message
-                var body = Encoding.UTF8.GetBytes(message);
+                                                                     
+                var body = Encoding.UTF8.GetBytes(message); // Encode the msg string
                 _Channel.BasicPublish(exchange: _ExchangeName, 
                                     routingKey: _RoutingKey, 
                                     basicProperties: null, 
-                                    body: body);
-
-                //MessageBox.Show("Image sent successfully!"); // For Testing
+                                    body: body); // Send encoded img as a message
             }
         }
 
@@ -342,17 +342,22 @@ namespace PBT_205_A1
             }
         }
 
+        /// <summary>
+        /// Method to close all connections to the channel/chatroom and close the form/app
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void LogoutButton_Click(object sender, EventArgs e)
         {
-            // Add a msg for others that the user has left
-            if (_Channel != null)
+            if (_Channel != null) // Add a msg for others that the user has left
             {
+                // Create the left chat string
                 string leaveMessage = $"{_Username} has left the chat.";
-                var body = Encoding.UTF8.GetBytes(leaveMessage);
+                var body = Encoding.UTF8.GetBytes(leaveMessage); // encode string
                 _Channel.BasicPublish(exchange: _ExchangeName, 
                                     routingKey: _RoutingKey, 
                                     basicProperties: null, 
-                                    body: body);
+                                    body: body); // publish msg to rabbit
             }
             if (_Channel != null) // Close the Channel
             {
