@@ -15,8 +15,8 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
   ##################################################################
   ### Dalton Christopher - ID: A00122255                         ###
   ### TUA - PBT205—Project-based Learning Studio: Technology     ###
-  ### - Assessment - 1                                           ###
-  ### - 06/2024                                                  ###
+  ### - Assessment - 3                                           ###
+  ### - 08/2024                                                  ###
   ##################################################################
 */
 namespace PBT_205_A1
@@ -56,7 +56,7 @@ namespace PBT_205_A1
         /// </summary>
         private void InitRabbitMQ()
         {
-            try
+            try // Try set up the RabbitMq connection
             {
                 var factory = new ConnectionFactory
                 {
@@ -81,9 +81,9 @@ namespace PBT_205_A1
                                   exchange: _ExchangeName,
                                   routingKey: _RoutingKey);
             }
-            catch (Exception ex)
+            catch
             {
-                MessageBox.Show($"Error connecting: {ex.Message}");
+                MessageBox.Show($"Error connecting: Couldn't Connect to RabbitMq");
             }
         }
 
@@ -117,8 +117,9 @@ namespace PBT_205_A1
                             }
                         }
 
-
+                        // If not a Joined msg, add the msg to the chat list box
                         ChatListBox.Items.Add(message);
+                        // & set the topIndex to the newest msg to keep the new chats visable
                         ChatListBox.TopIndex = ChatListBox.Items.Count - 1;
                     }));
                 };
@@ -180,8 +181,12 @@ namespace PBT_205_A1
             }
         }
 
-
-
+        /// <summary>
+        /// Method to work out the sizing of each item for the chat list box, This is so when a user sends a image
+        /// It can be properly formatted to fit within the other msgs, or imgs.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ChatListBox_MeasureItem(object sender, MeasureItemEventArgs e)
         {
             if (e.Index < 0) return;
