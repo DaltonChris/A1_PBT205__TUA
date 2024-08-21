@@ -155,7 +155,7 @@ namespace PBT_205_A1
                 // Draw the image
                 string base64String = item.Substring(imgIndex + 4); // Skip "IMG:"
                 byte[] imageBytes = Convert.FromBase64String(base64String); // convert the base64 to bytes
-                using MemoryStream ms = new MemoryStream(imageBytes); // memsstream for the bytes
+                using MemoryStream ms = new (imageBytes); // memsstream for the bytes
                 Image image = Image.FromStream(ms); // get img from the stream
 
                 // Calculate the aspect ratio
@@ -201,7 +201,7 @@ namespace PBT_205_A1
                 {
                     string base64String = item.Substring(imgIndex + 4); // Skip "IMG:"                    
                     byte[] imageBytes = Convert.FromBase64String(base64String);// Get the img's bytes
-                    using MemoryStream ms = new MemoryStream(imageBytes); // get steam from bytes
+                    using MemoryStream ms = new (imageBytes); // get steam from bytes
                     Image image = Image.FromStream(ms); // Convert the img
 
                     // build a new form to display the image
