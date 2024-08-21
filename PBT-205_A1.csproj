@@ -10,6 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="TestProject\**" />
+    <EmbeddedResource Remove="TestProject\**" />
+    <None Remove="TestProject\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
   </ItemGroup>
 
