@@ -259,7 +259,7 @@ namespace PBT_205_A1
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void SendButton_Click(object sender, EventArgs e)
+        void SendButton_Click(object sender, EventArgs e)
         {
             if (_Channel == null) // If channel is null
             {
